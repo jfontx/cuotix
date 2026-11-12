@@ -10,6 +10,7 @@ import {
   updateGroupSchema,
   type ListGroupsQuery,
 } from '../schemas/groups';
+import { joinGroup, listMembers } from '../services/memberships';
 import { closeGroup, createGroup, getGroupDetail, listGroups, updateGroup } from '../services/groups';
 
 /** Un id que no es UUID no puede existir: 404 en vez de error de BD */
@@ -40,6 +41,14 @@ export function createGroupsRouter() {
 
   router.post('/:id/close', async (req, res) => {
     res.json({ group: await closeGroup(groupId(req.params.id), req.auth!.userId) });
+  });
+
+  router.post('/:id/join', async (req, res) => {
+    res.status(201).json({ membership: await joinGroup(groupId(req.params.id), req.auth!.userId) });
+  });
+
+  router.get('/:id/members', async (req, res) => {
+    res.json({ data: await listMembers(groupId(req.params.id), req.auth!.userId) });
   });
 
   return router;

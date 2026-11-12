@@ -14,7 +14,9 @@ export default function AppLayout() {
       }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="groups/create" options={{ title: 'Crear grupo' }} />
-      <Stack.Screen name="groups/[id]" options={{ title: 'Grupo' }} />
+      <Stack.Screen name="groups/[id]/index" options={{ title: 'Grupo' }} />
+      <Stack.Screen name="groups/[id]/join" options={{ title: 'Solicitar unirme' }} />
+      <Stack.Screen name="groups/[id]/members" options={{ title: 'Miembros' }} />
     </Stack>
   );
 }
