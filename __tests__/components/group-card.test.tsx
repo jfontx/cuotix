@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 
@@ -104,6 +105,19 @@ describe('AppChip', () => {
     expect(screen.getByText('✓ Spotify')).toBeTruthy();
     await fireEvent.press(chip);
     expect(onPress).toHaveBeenCalled();
+  });
+
+  it('con ancho fijo todos los chips miden lo mismo, con o sin selección', async () => {
+    await wrap(
+      <>
+        <AppChip label="Todos" width={140} selected onPress={jest.fn()} />
+        <AppChip label="Netflix (Miembro Extra)" width={140} onPress={jest.fn()} />
+      </>,
+    );
+    const widths = ['Todos', 'Netflix (Miembro Extra)'].map(
+      (name) => (StyleSheet.flatten(screen.getByRole('button', { name }).props.style) as { width: number }).width,
+    );
+    expect(widths).toEqual([140, 140]);
   });
 });
 
