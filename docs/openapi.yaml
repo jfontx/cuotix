@@ -1,0 +1,571 @@
+openapi: 3.0.3
+info:
+  title: Cuotix API
+  version: 1.0.0
+  description: |
+    API de Cuotix, para compartir costos de suscripciones.
+
+    - Autenticación: `Authorization: Bearer <accessToken>` (JWT de 15 min). Renovar con `POST /auth/refresh`.
+    - Errores: `{ "error": { "code", "message", "details"? } }`. Códigos en `docs/IMPLEMENTATION_SPEC.md` B.15.
+    - Montos en pesos colombianos (enteros). Fechas en ISO 8601; los días de pago se interpretan en hora de Bogotá (UTC-5).
+    - Los detalles de comportamiento por fase están en `docs/IMPLEMENTATION_PHASES.md` (Decisiones de implementación).
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo local
+tags:
+  - { name: Sistema }
+  - { name: Auth }
+  - { name: Perfil }
+  - { name: Servicios }
+  - { name: Grupos }
+  - { name: Membresías }
+  - { name: Pagos }
+  - { name: Notificaciones }
+  - { name: Calificaciones }
+  - { name: Moderación }
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Estado del servicio
+      tags: [Sistema]
+      security: []
+      responses:
+        '200': { description: OK }
+  /auth/register:
+    post:
+      summary: Registrar usuario
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201': { description: Sesión creada }
+        '400': { $ref: '#/components/responses/E400' }
+        '409': { $ref: '#/components/responses/E409' }
+        '429': { $ref: '#/components/responses/E429' }
+  /auth/login:
+    post:
+      summary: Iniciar sesión
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: OK }
+        '400': { $ref: '#/components/responses/E400' }
+        '401': { $ref: '#/components/responses/E401' }
+        '429': { $ref: '#/components/responses/E429' }
+  /auth/refresh:
+    post:
+      summary: Rotar refresh token
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshRequest' }
+      responses:
+        '200': { description: OK }
+        '401': { $ref: '#/components/responses/E401' }
+        '429': { $ref: '#/components/responses/E429' }
+  /auth/logout:
+    post:
+      summary: Cerrar sesión
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LogoutRequest' }
+      responses:
+        '204': { description: Sin contenido }
+        '401': { $ref: '#/components/responses/E401' }
+  /me:
+    get:
+      summary: Mi perfil
+      tags: [Perfil]
+      responses:
+        '200': { description: OK }
+    patch:
+      summary: Actualizar mi perfil (name, phone)
+      tags: [Perfil]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProfileRequest' }
+      responses:
+        '200': { description: OK }
+        '400': { $ref: '#/components/responses/E400' }
+  /me/payments:
+    get:
+      summary: Mis cuotas
+      tags: [Pagos]
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+  /me/push-token:
+    post:
+      summary: Registrar token de push
+      tags: [Notificaciones]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PushTokenRequest' }
+      responses:
+        '204': { description: Sin contenido }
+  /me/notifications:
+    get:
+      summary: Bandeja de notificaciones
+      tags: [Notificaciones]
+      parameters:
+        - { name: page, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+  /me/notifications/read-all:
+    post:
+      summary: Marcar todas como leídas
+      tags: [Notificaciones]
+      responses:
+        '200': { description: OK }
+  /notifications/{id}/read:
+    patch:
+      summary: Marcar una notificación como leída
+      tags: [Notificaciones]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/E404' }
+  /services:
+    get:
+      summary: Catálogo de servicios
+      tags: [Servicios]
+      responses:
+        '200': { description: OK }
+  /services/{id}:
+    get:
+      summary: Detalle de servicio
+      tags: [Servicios]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/E404' }
+  /groups:
+    get:
+      summary: Listar grupos
+      tags: [Grupos]
+      parameters:
+        - { name: serviceId, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string } }
+        - { name: minPrice, in: query, schema: { type: string } }
+        - { name: maxPrice, in: query, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+        - { name: excludeMine, in: query, schema: { type: string } }
+        - { name: mine, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Crear grupo
+      tags: [Grupos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateGroupRequest' }
+      responses:
+        '201': { description: Grupo creado }
+        '400': { $ref: '#/components/responses/E400' }
+  /groups/{id}:
+    get:
+      summary: Detalle de grupo (payoutDetail solo para owner y miembros aprobados/activos)
+      tags: [Grupos]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/E404' }
+    patch:
+      summary: Editar grupo (solo owner)
+      tags: [Grupos]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateGroupRequest' }
+      responses:
+        '200': { description: OK }
+        '400': { $ref: '#/components/responses/E400' }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /groups/{id}/close:
+    post:
+      summary: Cerrar grupo (solo owner)
+      tags: [Grupos]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /groups/{id}/join:
+    post:
+      summary: Solicitar unirse
+      tags: [Membresías]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '201': { description: Solicitud creada }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /groups/{id}/members:
+    get:
+      summary: Miembros del grupo
+      tags: [Membresías]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+  /groups/{id}/payments:
+    get:
+      summary: Cuotas del grupo
+      tags: [Pagos]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+  /memberships/{id}/approve:
+    patch:
+      summary: Aprobar solicitud (owner)
+      tags: [Membresías]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApproveRequest' }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /memberships/{id}/reject:
+    patch:
+      summary: Rechazar solicitud (owner)
+      tags: [Membresías]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /memberships/{id}/confirm-access:
+    post:
+      summary: Confirmar acceso (miembro aprobado)
+      tags: [Membresías]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /memberships/{id}/leave:
+    post:
+      summary: Salir del grupo
+      tags: [Membresías]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /memberships/{id}/remove:
+    post:
+      summary: Expulsar miembro (owner)
+      tags: [Membresías]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RemoveRequest' }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /payments/{id}:
+    get:
+      summary: Detalle de cuota
+      tags: [Pagos]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/E404' }
+  /payments/{id}/mark-paid:
+    post:
+      summary: Marcar como pagada (pagador)
+      tags: [Pagos]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MarkPaidRequest' }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /payments/{id}/confirm:
+    post:
+      summary: Confirmar pago (owner)
+      tags: [Pagos]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /payments/{id}/reject:
+    post:
+      summary: Rechazar pago (owner)
+      tags: [Pagos]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectPaymentRequest' }
+      responses:
+        '200': { description: OK }
+        '400': { $ref: '#/components/responses/E400' }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /ratings:
+    post:
+      summary: Calificar a otro participante del grupo
+      tags: [Calificaciones]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRatingRequest' }
+      responses:
+        '201': { description: Calificación creada }
+        '400': { $ref: '#/components/responses/E400' }
+        '403': { $ref: '#/components/responses/E403' }
+        '409': { $ref: '#/components/responses/E409' }
+  /users/{id}/ratings:
+    get:
+      summary: Calificaciones recibidas por un usuario
+      tags: [Calificaciones]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: page, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/E404' }
+  /reports:
+    post:
+      summary: Reportar a un usuario
+      tags: [Moderación]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateReportRequest' }
+      responses:
+        '201': { description: Reporte creado }
+        '400': { $ref: '#/components/responses/E400' }
+        '403': { $ref: '#/components/responses/E403' }
+    get:
+      summary: Listar reportes (solo ADMIN)
+      tags: [Moderación]
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+  /reports/{id}:
+    patch:
+      summary: Actualizar estado de un reporte (solo ADMIN)
+      tags: [Moderación]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateReportRequest' }
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/E403' }
+        '404': { $ref: '#/components/responses/E404' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    E400:
+      description: Validación (validation/error)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    E401:
+      description: No autenticado o credenciales inválidas
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    E403:
+      description: Sin permiso
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    E404:
+      description: No encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    E409:
+      description: Conflicto de estado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    E429:
+      description: Demasiadas solicitudes
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, example: validation/error }
+            message: { type: string }
+            details: { type: array, items: { type: object } }
+    RegisterRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, maxLength: 128 }
+        name: { type: string, minLength: 2, maxLength: 80 }
+        phone: { type: string, minLength: 7, maxLength: 20 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+    LogoutRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+        pushToken: { type: string }
+    UpdateProfileRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+        phone: { type: string, nullable: true, minLength: 7, maxLength: 20 }
+    PushTokenRequest:
+      type: object
+      required: [token, platform]
+      properties:
+        token: { type: string }
+        platform: { type: string, enum: [ios, android, web] }
+    CreateGroupRequest:
+      type: object
+      required: [serviceId, title, pricePerMember, paymentDay, slots, payoutMethod, payoutDetail]
+      properties:
+        serviceId: { type: string, format: uuid }
+        title: { type: string, minLength: 3, maxLength: 80 }
+        description: { type: string, maxLength: 500 }
+        pricePerMember: { type: integer, minimum: 1, description: COP }
+        paymentDay: { type: integer, minimum: 1, maximum: 28 }
+        slots: { type: integer, minimum: 1, description: Entre 1 y maxMembers-1 del servicio }
+        payoutMethod: { type: string, minLength: 2, maxLength: 40 }
+        payoutDetail: { type: string, minLength: 3, maxLength: 200 }
+    UpdateGroupRequest:
+      type: object
+      minProperties: 1
+      properties:
+        title: { type: string }
+        description: { type: string }
+        pricePerMember: { type: integer }
+        paymentDay: { type: integer, minimum: 1, maximum: 28 }
+        slots: { type: integer }
+        payoutMethod: { type: string }
+        payoutDetail: { type: string }
+        status: { type: string, enum: [OPEN, PAUSED] }
+    ApproveRequest:
+      type: object
+      properties:
+        firstAmount: { type: integer, minimum: 1 }
+    RemoveRequest:
+      type: object
+      properties:
+        reason: { type: string, maxLength: 200 }
+    MarkPaidRequest:
+      type: object
+      properties:
+        reference: { type: string, maxLength: 100 }
+    RejectPaymentRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 10, maxLength: 200 }
+    CreateRatingRequest:
+      type: object
+      required: [groupId, toId, score]
+      properties:
+        groupId: { type: string, format: uuid }
+        toId: { type: string, format: uuid }
+        score: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, maxLength: 300 }
+    CreateReportRequest:
+      type: object
+      required: [groupId, reportedId, reason]
+      properties:
+        groupId: { type: string, format: uuid }
+        reportedId: { type: string, format: uuid }
+        reason: { type: string, minLength: 3, maxLength: 100 }
+        detail: { type: string, maxLength: 500 }
+    UpdateReportRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [OPEN, REVIEWED, DISMISSED] }
