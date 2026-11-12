@@ -514,47 +514,47 @@ Sistema de reputación y reportes de usuarios.
 ### Tareas
 
 #### Backend
-- [ ] `POST /ratings` - Calificar usuario
-- [ ] `GET /users/:id/ratings` - Ver calificaciones de usuario
-- [ ] `POST /reports` - Reportar usuario
-- [ ] `GET /reports` - Listar reportes (solo admin)
-- [ ] `PATCH /reports/:id` - Actualizar estado de reporte
-- [ ] Validar elegibilidad para calificar
+- [x] `POST /ratings` - Calificar usuario
+- [x] `GET /users/:id/ratings` - Ver calificaciones de usuario
+- [x] `POST /reports` - Reportar usuario
+- [x] `GET /reports` - Listar reportes (solo admin)
+- [x] `PATCH /reports/:id` - Actualizar estado de reporte
+- [x] Validar elegibilidad para calificar
 
 #### Mobile
-- [ ] Pantalla Rate User
-- [ ] Pantalla User Profile (con rating)
-- [ ] Componente AppRating (estrellas)
-- [ ] UI para reportar usuario
+- [x] Pantalla Rate User
+- [x] Pantalla User Profile (con rating)
+- [x] Componente AppRating (estrellas)
+- [x] UI para reportar usuario
 
 ### Tests Requeridos
 
 #### Unit Tests (Backend)
 ```typescript
 // services/ratings.test.ts
-- [ ] createRating valida elegibilidad (cuota CONFIRMED o LEFT)
-- [ ] createRating falla si ya calificó
-- [ ] createRating valida score 1-5
-- [ ] getUserRatings calcula promedio
+- [x] createRating valida elegibilidad (cuota CONFIRMED o LEFT)
+- [x] createRating falla si ya calificó
+- [x] createRating valida score 1-5
+- [x] getUserRatings calcula promedio
 
 // services/reports.test.ts
-- [ ] createReport requiere motivo
-- [ ] getReports solo admin puede acceder
-- [ ] updateReport cambia estado
+- [x] createReport requiere motivo
+- [x] getReports solo admin puede acceder
+- [x] updateReport cambia estado
 ```
 
 #### Integration Tests (Backend)
 ```typescript
 // integration/ratings.test.ts
-- [ ] POST /ratings - crea calificación
-- [ ] POST /ratings - falla si no elegible (403)
-- [ ] POST /ratings - falla si ya calificó (409)
-- [ ] GET /users/:id/ratings - retorna promedio y lista
+- [x] POST /ratings - crea calificación
+- [x] POST /ratings - falla si no elegible (403)
+- [x] POST /ratings - falla si ya calificó (409)
+- [x] GET /users/:id/ratings - retorna promedio y lista
 
 // integration/reports.test.ts
-- [ ] POST /reports - crea reporte
-- [ ] GET /reports - solo admin (403)
-- [ ] PATCH /reports/:id - actualiza estado
+- [x] POST /reports - crea reporte
+- [x] GET /reports - solo admin (403)
+- [x] PATCH /reports/:id - actualiza estado
 ```
 
 ### Commit
@@ -872,3 +872,12 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Mobile: notificaciones (Fase 6).** La bandeja es la pantalla `notifications/index` accesible desde "Notificaciones (n)" en Mis grupos (igual que "Mis cuotas"), en vez de una pestaña, porque las pestañas nativas requieren un icono PNG nuevo. El token se registra tras iniciar o restaurar sesión (no bloquea ni rompe el acceso si se deniega el permiso, es simulador o falla la red) y se envía en el logout. En primer plano se muestra el banner y `useNotificationListeners` invalida las etiquetas RTK Query según el tipo (`tagsForNotification`); al tocar un push se abre la cuota, el grupo o la bandeja. En desarrollo hace falta un build de desarrollo (no Expo Go) y un `projectId` de EAS para obtener el token.
+
+<!-- Decision: 2026-11-12 -->
+**Calificaciones: elegibilidad y respuestas (Fase 7).** Solo se califican entre sí el administrador y un miembro del mismo grupo (no entre miembros). Es elegible si el miembro tiene al menos una cuota `CONFIRMED` o su membresía está `LEFT`; en cualquier otro caso (incluido calificarse a uno mismo o ser ajeno al grupo) responde `403 rating/not-eligible`. `POST /ratings` recibe `{ groupId, toId, score (entero 1–5), comment? (≤300) }` y responde `201 { rating }`; el `@@unique([groupId, fromId, toId])` garantiza `409 rating/already-rated` también ante peticiones simultáneas (se captura `P2002`). `GET /users/:id/ratings?page&limit` responde `{ user, average (1 decimal, null sin calificaciones), count, data, page, limit }`; un id inválido o inexistente da 404.
+
+<!-- Decision: 2026-11-12 -->
+**Reportes y moderación (Fase 7).** `POST /reports` recibe `{ groupId, reportedId, reason (3–100), detail? (≤500) }`; ambos usuarios deben haber compartido el grupo (administrador o membresía `APPROVED`/`ACTIVE`/`LEFT`/`REMOVED`), no se puede reportar a uno mismo (`403 general/forbidden`). `GET /reports?status=` y `PATCH /reports/:id { status }` exigen `role = ADMIN` (`403 general/forbidden`), se verifica en el servicio contra la BD y no en el JWT. El panel de moderación es solo API en este MVP: la app móvil no tiene pantalla de admin (los hooks `useListReportsQuery`/`useUpdateReportMutation` ya existen en `ratingsApi`). No se envían notificaciones por calificaciones ni reportes (no hay tipos en el enum y cambiarlo queda fuera de lo decidible de forma autónoma).
+
+<!-- Decision: 2026-11-12 -->
+**Mobile: calificaciones y reportes (Fase 7).** Nuevo `AppRating` en `src/components/ui`: editable (cinco `radio` de ≥48dp con etiqueta "N estrellas") o solo lectura (un único elemento "Calificación: X de 5 estrellas"); las estrellas llenas/vacías se distinguen por glifo (★/☆), no solo por color. Rutas: `users/[id]` (perfil con promedio y lista; con `groupId` ofrece "Calificar" y "Reportar usuario"), `ratings/create` y `reports/create` (motivo con `AppChip` + detalle opcional). Se llega al perfil desde "Ver perfil" en la lista de miembros y desde "Perfil de {administrador}" en el detalle del grupo (miembros activos o que salieron). La elegibilidad la decide el servidor y su mensaje se muestra en pantalla.

@@ -9,7 +9,10 @@ import { createMembershipsRouter } from './routes/memberships';
 import { createMeRouter } from './routes/me';
 import { createNotificationsRouter } from './routes/notifications';
 import { createPaymentsRouter } from './routes/payments';
+import { createRatingsRouter } from './routes/ratings';
+import { createReportsRouter } from './routes/reports';
 import { createServicesRouter } from './routes/services';
+import { createUsersRouter } from './routes/users';
 
 export function createApp(opts: { forceRateLimit?: boolean } = {}) {
   const app = express();
@@ -30,6 +33,9 @@ export function createApp(opts: { forceRateLimit?: boolean } = {}) {
   app.use('/memberships', createMembershipsRouter());
   app.use('/notifications', createNotificationsRouter());
   app.use('/payments', createPaymentsRouter());
+  app.use('/ratings', createRatingsRouter());
+  app.use('/reports', createReportsRouter());
+  app.use('/users', createUsersRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);

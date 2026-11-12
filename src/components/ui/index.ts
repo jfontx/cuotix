@@ -7,6 +7,7 @@ export * from './app-empty-state';
 export * from './app-icon';
 export * from './app-input';
 export * from './app-list';
+export * from './app-rating';
 export * from './app-modal';
 export * from './app-screen';
 export * from './app-text';
