@@ -38,6 +38,7 @@ export default function HomeScreen() {
         ListFooterComponent={
           <View style={styles.footer}>
             <AppButton title="Crear grupo" onPress={() => router.push('/groups/create')} />
+            <AppButton title="Mis cuotas" variant="outline" onPress={() => router.push('/payments')} />
             <AppButton title="Cerrar sesión" variant="ghost" onPress={() => dispatch(logout())} />
           </View>
         }

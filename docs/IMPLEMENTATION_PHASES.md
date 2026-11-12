@@ -374,48 +374,48 @@ Sistema completo de cuotas con transiciones de estado.
 ### Tareas
 
 #### Backend
-- [ ] `GET /me/payments` - Mis cuotas
-- [ ] `GET /groups/:id/payments` - Cuotas del grupo (owner)
-- [ ] `GET /payments/:id` - Detalle de cuota
-- [ ] `POST /payments/:id/mark-paid` - Marcar como pagado
-- [ ] `POST /payments/:id/confirm` - Confirmar pago (owner)
-- [ ] `POST /payments/:id/reject` - Rechazar con motivo
-- [ ] Validar transiciones de estado válidas
+- [x] `GET /me/payments` - Mis cuotas
+- [x] `GET /groups/:id/payments` - Cuotas del grupo (owner)
+- [x] `GET /payments/:id` - Detalle de cuota
+- [x] `POST /payments/:id/mark-paid` - Marcar como pagado
+- [x] `POST /payments/:id/confirm` - Confirmar pago (owner)
+- [x] `POST /payments/:id/reject` - Rechazar con motivo
+- [x] Validar transiciones de estado válidas
 
 #### Mobile
-- [ ] RTK Query endpoints (payments)
-- [ ] Pantalla Payment Detail
-- [ ] Pantalla Mark as Paid
-- [ ] UI para confirmar/rechazar pagos
-- [ ] Lista de pagos en grupo
+- [x] RTK Query endpoints (payments)
+- [x] Pantalla Payment Detail
+- [x] Pantalla Mark as Paid
+- [x] UI para confirmar/rechazar pagos
+- [x] Lista de pagos en grupo
 
 ### Tests Requeridos
 
 #### Unit Tests (Backend)
 ```typescript
 // services/payments.test.ts
-- [ ] markAsPaid cambia PENDING → MARKED_PAID
-- [ ] markAsPaid permite OVERDUE → MARKED_PAID
-- [ ] markAsPaid falla desde CONFIRMED
-- [ ] markAsPaid guarda referencia y fecha
-- [ ] confirmPayment cambia MARKED_PAID → CONFIRMED
-- [ ] confirmPayment falla desde PENDING
-- [ ] rejectPayment cambia MARKED_PAID → PENDING
-- [ ] rejectPayment guarda motivo y limpia markedPaidAt
-- [ ] rejectPayment falla sin motivo
+- [x] markAsPaid cambia PENDING → MARKED_PAID
+- [x] markAsPaid permite OVERDUE → MARKED_PAID
+- [x] markAsPaid falla desde CONFIRMED
+- [x] markAsPaid guarda referencia y fecha
+- [x] confirmPayment cambia MARKED_PAID → CONFIRMED
+- [x] confirmPayment falla desde PENDING
+- [x] rejectPayment cambia MARKED_PAID → PENDING
+- [x] rejectPayment guarda motivo y limpia markedPaidAt
+- [x] rejectPayment falla sin motivo
 ```
 
 #### Integration Tests (Backend)
 ```typescript
 // integration/payments.test.ts
-- [ ] GET /me/payments - retorna solo mis cuotas
-- [ ] GET /groups/:id/payments - solo owner ve todas
-- [ ] POST /payments/:id/mark-paid - cambia estado
-- [ ] POST /payments/:id/mark-paid - permite desde OVERDUE
-- [ ] POST /payments/:id/confirm - solo owner (403)
-- [ ] POST /payments/:id/confirm - transición inválida (409)
-- [ ] POST /payments/:id/reject - requiere motivo (400)
-- [ ] POST /payments/:id/reject - limpia markedPaidAt
+- [x] GET /me/payments - retorna solo mis cuotas
+- [x] GET /groups/:id/payments - solo owner ve todas
+- [x] POST /payments/:id/mark-paid - cambia estado
+- [x] POST /payments/:id/mark-paid - permite desde OVERDUE
+- [x] POST /payments/:id/confirm - solo owner (403)
+- [x] POST /payments/:id/confirm - transición inválida (409)
+- [x] POST /payments/:id/reject - requiere motivo (400)
+- [x] POST /payments/:id/reject - limpia markedPaidAt
 ```
 
 ### Commit
@@ -848,3 +848,12 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Mobile: membresías (Fase 4).** El detalle del grupo pasó a `groups/[id]/index.tsx` para alojar `groups/[id]/join` (pantalla de solicitud con resumen y confirmación) y `groups/[id]/members` (solicitudes, esperando acceso y activos). Aprobar abre un modal con monto opcional de primera cuota; expulsar abre un modal con motivo opcional y muestra el error del servidor si aún no es elegible. Salir del grupo pide confirmación. `MemberCard` deja los botones fuera de la tarjeta (un `AppCard` es un único elemento accesible y ocultaría sus botones a los lectores de pantalla). Se añadió `AppAvatar` (decorativo) a `src/components/ui`.
+
+<!-- Decision: 2026-11-12 -->
+**Pagos: permisos y transiciones (Fase 5).** `mark-paid` solo lo hace el dueño de la cuota (`general/forbidden` si no); `confirm` y `reject` solo el administrador del grupo (`group/not-owner`). Un id que no es UUID responde `404 payment/not-found`. Desde `CONFIRMED` cualquier acción responde `payment/already-confirmed`; desde cualquier otro estado no permitido, `payment/invalid-transition` (ambos 409). `mark-paid` acepta `PENDING` y `OVERDUE` (pago tardío) y limpia un `rejectionReason` previo; todas las transiciones usan `updateMany` condicionado al estado esperado, así una doble petición solo se aplica una vez (y solo genera una notificación).
+
+<!-- Decision: 2026-11-12 -->
+**Pagos: validación y respuestas.** `reference` opcional, 1–100 caracteres; `reason` de `reject` obligatorio, 10–200. `GET /me/payments` y `GET /groups/:id/payments` responden `{ data }` (máx. 200, `dueDate` descendente, filtro opcional `?status=`) con `group` (título, medio de pago, servicio) y `member`, sin `payoutDetail`. `GET /payments/:id` responde `{ payment }` e incluye `payoutDetail` solo al pagador y al administrador (aunque el pagador ya haya salido del grupo, porque aún puede deber la cuota). Notificaciones: `PAYMENT_MARKED_PAID` al administrador, `PAYMENT_CONFIRMED`/`PAYMENT_REJECTED` al miembro, vía `notify()`; el push llega con la Fase 6.
+
+<!-- Decision: 2026-11-12 -->
+**Mobile: pagos (Fase 5).** Rutas nuevas: `payments/index` (Mis cuotas, accesible desde Mis grupos), `payments/[id]` (detalle; según si el usuario es el pagador o el administrador muestra "Ya pagué" o "Confirmar/Rechazar"), `payments/mark-paid` (referencia opcional) y `groups/[id]/payments` (el administrador ve las cuotas de todos; un miembro, las suyas en ese grupo). El rechazo pide un motivo de al menos 10 caracteres en un modal. Fechas de vencimiento se muestran en horario de Bogotá (`src/lib/payments.ts`).

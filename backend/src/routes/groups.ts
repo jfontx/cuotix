@@ -10,6 +10,8 @@ import {
   updateGroupSchema,
   type ListGroupsQuery,
 } from '../schemas/groups';
+import { listPaymentsQuerySchema, type ListPaymentsQuery } from '../schemas/payments';
+import { listGroupPayments } from '../services/payments';
 import { joinGroup, listMembers } from '../services/memberships';
 import { closeGroup, createGroup, getGroupDetail, listGroups, updateGroup } from '../services/groups';
 
@@ -49,6 +51,12 @@ export function createGroupsRouter() {
 
   router.get('/:id/members', async (req, res) => {
     res.json({ data: await listMembers(groupId(req.params.id), req.auth!.userId) });
+  });
+
+  router.get('/:id/payments', validateQuery(listPaymentsQuerySchema), async (req, res) => {
+    res.json({
+      data: await listGroupPayments(groupId(req.params.id), req.auth!.userId, res.locals.query as ListPaymentsQuery),
+    });
   });
 
   return router;
