@@ -84,14 +84,18 @@ export default function PaymentDetailScreen() {
 
           {payment.reference ? <AppText>Referencia: {payment.reference}</AppText> : null}
 
-          <AppDivider />
-          <AppText variant="h3">Datos de pago</AppText>
-          <AppCard
-            variant="outlined"
-            accessibilityLabel={`Medio de pago ${payment.group.payoutMethod}: ${payment.payoutDetail}`}>
-            <AppText style={styles.bold}>{payment.group.payoutMethod}</AppText>
-            <AppText selectable>{payment.payoutDetail}</AppText>
-          </AppCard>
+          {payment.payoutDetail ? (
+            <>
+              <AppDivider />
+              <AppText variant="h3">Datos de pago</AppText>
+              <AppCard
+                variant="outlined"
+                accessibilityLabel={`Medio de pago ${payment.group.payoutMethod}: ${payment.payoutDetail}`}>
+                <AppText style={styles.bold}>{payment.group.payoutMethod}</AppText>
+                <AppText selectable>{payment.payoutDetail}</AppText>
+              </AppCard>
+            </>
+          ) : null}
 
           {actionError ? (
             <AppText color={colors.error} accessibilityRole="alert">

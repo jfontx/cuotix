@@ -156,6 +156,14 @@ describe('PaymentDetailScreen', () => {
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/payments/mark-paid', params: { id: 'p1' } });
   });
 
+  it('no muestra datos de pago si el servidor no los envía (miembro que ya salió)', async () => {
+    signIn('u1');
+    mockApi({ '/payments/p1': () => json({ payment: payment({ status: 'CONFIRMED' }) }) });
+    await renderScreen(<PaymentDetailScreen />);
+    expect(await screen.findByText(/Spotify Familiar/)).toBeTruthy();
+    expect(screen.queryByText('Datos de pago')).toBeNull();
+  });
+
   it('muestra el motivo si el administrador rechazó el pago', async () => {
     signIn('u1');
     mockApi({ '/payments/p1': () => json({ payment: detail({ rejectionReason: 'No llegó la transferencia' }) }) });

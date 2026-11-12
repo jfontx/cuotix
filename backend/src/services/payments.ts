@@ -4,6 +4,9 @@ import { prisma } from '../lib/prisma';
 import type { ListPaymentsQuery, MarkPaidInput, RejectPaymentInput } from '../schemas/payments';
 import { notify } from './notifications';
 
+/** Membresías que ocupan cupo: las únicas (además del administrador) que ven `payoutDetail` (A.7) */
+const OCCUPYING = ['APPROVED', 'ACTIVE'];
+
 /** Estados desde los que el miembro puede marcar como pagado (B.7: `OVERDUE` es pago tardío) */
 const MARKABLE = ['PENDING', 'OVERDUE'] as const;
 const LIST_LIMIT = 200;
@@ -80,7 +83,9 @@ export async function getPaymentDetail(id: string, userId: string) {
   const payment = await getPayment(id);
   const isOwner = payment.membership.group.ownerId === userId;
   if (!isOwner && payment.membership.userId !== userId) throw new AppError('general/forbidden');
-  return toPayment(payment, { withPayout: true });
+  // Quien ya salió o fue removido conserva la cuota pero no los datos de cobro
+  const withPayout = isOwner || OCCUPYING.includes(payment.membership.status);
+  return toPayment(payment, { withPayout });
 }
 
 export async function markAsPaid(id: string, userId: string, input: MarkPaidInput = {}, now = new Date()) {

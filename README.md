@@ -90,7 +90,15 @@ npm install
 npx expo start
 ```
 
-Variable opcional: `EXPO_PUBLIC_API_URL` (por defecto `http://localhost:3000`). En un dispositivo físico usa la IP de tu máquina, no `localhost`.
+Variable opcional: `EXPO_PUBLIC_API_URL` (por defecto `http://localhost:3000`, válido para el simulador de iOS). Según dónde corra la app:
+
+| Dónde | Valor |
+|-------|-------|
+| Simulador de iOS | `http://localhost:3000` (por defecto) |
+| Emulador de Android | `http://10.0.2.2:3000` (`localhost` sería el propio emulador) |
+| Dispositivo físico | `http://<IP de tu máquina>:3000` (por ejemplo `ipconfig getifaddr en0` en macOS); el teléfono y el equipo deben estar en la misma red |
+
+Ejemplo: `EXPO_PUBLIC_API_URL=http://10.0.2.2:3000 npx expo start`.
 
 Las notificaciones push requieren un build de desarrollo (no Expo Go) y un `projectId` de EAS.
 

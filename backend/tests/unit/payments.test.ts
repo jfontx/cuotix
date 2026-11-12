@@ -141,6 +141,17 @@ describe('listados y detalle', () => {
     await expect(getPaymentDetail(payment.id, stranger.id)).rejects.toMatchObject({ code: 'general/forbidden' });
   });
 
+  it('getPaymentDetail oculta payoutDetail a quien ya salió o fue removido, pero no al owner', async () => {
+    for (const status of ['LEFT', 'REMOVED'] as const) {
+      const { owner, member, membership, payment } = await setupPayment();
+      await prisma.membership.update({ where: { id: membership.id }, data: { status } });
+      const asMember = await getPaymentDetail(payment.id, member.id);
+      expect(asMember).not.toHaveProperty('payoutDetail');
+      expect(JSON.stringify(asMember)).not.toContain('3001234567');
+      expect((await getPaymentDetail(payment.id, owner.id)).payoutDetail).toBe('3001234567');
+    }
+  });
+
   it('los listados no exponen payoutDetail', async () => {
     const { member } = await setupPayment();
     const [row] = await listMyPayments(member.id);
