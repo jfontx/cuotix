@@ -70,59 +70,59 @@ Sistema completo de auth con JWT, refresh tokens y manejo seguro de sesión.
 ### Tareas
 
 #### Backend
-- [ ] `POST /auth/register` - Registro con validación Zod
-- [ ] `POST /auth/login` - Login con hash verification
-- [ ] `POST /auth/refresh` - Rotación de refresh tokens
-- [ ] `POST /auth/logout` - Invalidar tokens
-- [ ] `GET /me` - Perfil del usuario autenticado
-- [ ] `PATCH /me` - Actualizar perfil
-- [ ] Middleware de autenticación JWT
-- [ ] Hash de passwords con Argon2/bcrypt
-- [ ] Rate limiting en login/register
+- [x] `POST /auth/register` - Registro con validación Zod
+- [x] `POST /auth/login` - Login con hash verification
+- [x] `POST /auth/refresh` - Rotación de refresh tokens
+- [x] `POST /auth/logout` - Invalidar tokens
+- [x] `GET /me` - Perfil del usuario autenticado
+- [x] `PATCH /me` - Actualizar perfil
+- [x] Middleware de autenticación JWT
+- [x] Hash de passwords con Argon2/bcrypt
+- [x] Rate limiting en login/register
 
 #### Mobile
-- [ ] `authSlice` en Redux (estado de sesión)
-- [ ] Almacenamiento seguro de tokens (expo-secure-store)
-- [ ] Interceptor para refresh automático
-- [ ] Pantalla Login
-- [ ] Pantalla Register
-- [ ] Lógica de logout
+- [x] `authSlice` en Redux (estado de sesión)
+- [x] Almacenamiento seguro de tokens (expo-secure-store)
+- [x] Interceptor para refresh automático
+- [x] Pantalla Login
+- [x] Pantalla Register
+- [x] Lógica de logout
 
 ### Tests Requeridos
 
 #### Unit Tests (Backend)
 ```typescript
 // services/auth.test.ts
-- [ ] hashPassword genera hash válido
-- [ ] verifyPassword valida correctamente
-- [ ] generateAccessToken crea JWT válido
-- [ ] generateRefreshToken crea token y guarda hash
-- [ ] validateRefreshToken detecta token inválido/expirado
-- [ ] revokeAllUserTokens elimina todos los refresh tokens
+- [x] hashPassword genera hash válido
+- [x] verifyPassword valida correctamente
+- [x] generateAccessToken crea JWT válido
+- [x] generateRefreshToken crea token y guarda hash
+- [x] validateRefreshToken detecta token inválido/expirado
+- [x] revokeAllUserTokens elimina todos los refresh tokens
 ```
 
 #### Integration Tests (Backend)
 ```typescript
 // integration/auth.test.ts
-- [ ] POST /auth/register - crea usuario y retorna tokens
-- [ ] POST /auth/register - rechaza email duplicado (409)
-- [ ] POST /auth/register - valida campos requeridos (400)
-- [ ] POST /auth/login - retorna tokens con credenciales válidas
-- [ ] POST /auth/login - rechaza credenciales inválidas (401)
-- [ ] POST /auth/refresh - rota tokens correctamente
-- [ ] POST /auth/refresh - revoca todos si token ya usado
-- [ ] POST /auth/logout - invalida refresh token
-- [ ] GET /me - retorna usuario autenticado
-- [ ] GET /me - rechaza sin token (401)
-- [ ] GET /me - rechaza con token expirado (401)
+- [x] POST /auth/register - crea usuario y retorna tokens
+- [x] POST /auth/register - rechaza email duplicado (409)
+- [x] POST /auth/register - valida campos requeridos (400)
+- [x] POST /auth/login - retorna tokens con credenciales válidas
+- [x] POST /auth/login - rechaza credenciales inválidas (401)
+- [x] POST /auth/refresh - rota tokens correctamente
+- [x] POST /auth/refresh - revoca todos si token ya usado
+- [x] POST /auth/logout - invalida refresh token
+- [x] GET /me - retorna usuario autenticado
+- [x] GET /me - rechaza sin token (401)
+- [x] GET /me - rechaza con token expirado (401)
 ```
 
 #### Unit Tests (Mobile)
 ```typescript
 // authSlice.test.ts
-- [ ] setCredentials guarda usuario y tokens
-- [ ] clearCredentials limpia estado
-- [ ] selectIsAuthenticated retorna correcto
+- [x] setCredentials guarda usuario y tokens
+- [x] clearCredentials limpia estado
+- [x] selectIsAuthenticated retorna correcto
 ```
 
 ### Commit
@@ -794,3 +794,21 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Docker verificado.** Con Colima + `docker-compose` (binario con guion; el plugin `docker compose` no queda registrado con la instalación de brew), `docker-compose up --build` levanta la API y PostgreSQL, aplica migraciones y `/health` responde. Un script `backend/docker/init-test-db.sql` crea la BD `cuotix_test` al inicializar el volumen, de modo que los tests usan el contenedor y ya no se requiere PostgreSQL local.
+
+<!-- Decision: 2026-11-12 -->
+**Auth: refresh tokens (Fase 1).** El refresh token es un JWT firmado con `JWT_REFRESH_SECRET` y `jti` único; en BD solo se guarda su hash SHA-256. Un token con firma válida pero sin registro en BD (ya rotado/revocado) se interpreta como reutilización: se revocan todos los tokens del usuario y se responde `auth/token-revoked`. La rotación consume el token con `deleteMany` (atómico) para que dos peticiones concurrentes no lo usen a la vez.
+
+<!-- Decision: 2026-11-12 -->
+**Auth: formato de errores y códigos.** Todas las respuestas de error son `{ "error": { "code", "message", "details"? } }` con los códigos de `IMPLEMENTATION_SPEC.md` B.15 (`backend/src/lib/errors.ts`). `auth/token-invalid` se usa también para "sin token / token mal formado" en el middleware.
+
+<!-- Decision: 2026-11-12 -->
+**Auth: `POST /auth/logout`.** Requiere access token válido (Bearer) además del `refreshToken`. `pushToken` es **opcional** (la spec lo marca obligatorio, pero el registro de push tokens llega en una fase posterior); si se envía, se elimina. Responde `204`.
+
+<!-- Decision: 2026-11-12 -->
+**Auth: validación y respuestas.** Correo normalizado a minúsculas; contraseña 8–128 caracteres; nombre 2–80; teléfono opcional 7–20. `register` y `login` retornan `{ user, accessToken, refreshToken }` (sin `passwordHash`). `login` ejecuta una verificación Argon2 ficticia cuando el correo no existe para no filtrar usuarios por tiempo de respuesta. `PATCH /me` solo permite `name` y `phone`; el resto de campos se ignora.
+
+<!-- Decision: 2026-11-12 -->
+**Auth: rate limiting.** `express-rate-limit` con límites de B.16 (login 5/15 min por IP+correo, register 10/h, refresh 10/min), configurables con `RATE_LIMIT_LOGIN_MAX`, `RATE_LIMIT_REGISTER_MAX` y `RATE_LIMIT_REFRESH_MAX`. Se desactiva con `NODE_ENV=test` salvo `createApp({ forceRateLimit: true })` (usado por su test). El limitador general de 100/min por usuario queda para una fase posterior. `trust proxy` solo se activa con la variable `TRUST_PROXY` para no permitir suplantar la IP vía `X-Forwarded-For`.
+
+<!-- Decision: 2026-11-12 -->
+**Mobile: sesión.** El access token vive solo en memoria (Redux) y el refresh token en `expo-secure-store`. Al abrir la app, `restoreSession` rota el refresh token guardado y carga `/me`; mientras tanto se mantiene el splash (`status: 'loading'`). El interceptor (`baseQueryWithReauth`) reintenta una vez ante un 401 y comparte una sola renovación entre peticiones simultáneas; si el servidor rechaza el refresh, cierra la sesión, y si no hay red conserva el token guardado. Las rutas se reorganizaron en grupos `(auth)` (login/register) y `(app)` (tabs existentes) protegidos con `Stack.Protected`. Los componentes de formulario de `src/components/auth/` son provisionales; la Fase 2 los reemplaza por los componentes base de UI.
