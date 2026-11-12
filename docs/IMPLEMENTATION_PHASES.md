@@ -791,3 +791,6 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Proceso.** Cada decisión relevante se documenta en esta sección y los checkboxes de cada fase se marcan `[x]` al completarse. Docker se usa solo por CLI (Colima), sin Docker Desktop; `docker-compose.yml` aún no fue probado.
+
+<!-- Decision: 2026-11-12 -->
+**Docker verificado.** Con Colima + `docker-compose` (binario con guion; el plugin `docker compose` no queda registrado con la instalación de brew), `docker-compose up --build` levanta la API y PostgreSQL, aplica migraciones y `/health` responde. Un script `backend/docker/init-test-db.sql` crea la BD `cuotix_test` al inicializar el volumen, de modo que los tests usan el contenedor y ya no se requiere PostgreSQL local.
