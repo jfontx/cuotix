@@ -1,9 +1,11 @@
+import { clearCurrentPushToken, getCurrentPushToken } from '@/lib/push';
 import { secureStorage } from '@/lib/secure-storage';
 
 import { api } from './api';
 import { authApi } from './authApi';
 import { clearCredentials, selectRefreshToken, setCredentials, setUser, type Credentials } from './authSlice';
 import { refreshSession } from './base-query';
+import { registerPush } from './push-actions';
 import type { AppDispatch, RootState } from './index';
 
 type Thunk<T = void> = (dispatch: AppDispatch, getState: () => RootState) => Promise<T>;
@@ -14,6 +16,7 @@ export const startSession =
   async (dispatch) => {
     await secureStorage.setRefreshToken(credentials.refreshToken);
     dispatch(setCredentials(credentials));
+    void dispatch(registerPush());
   };
 
 /** Restaura la sesión al abrir la app a partir del refresh token guardado. */
@@ -30,15 +33,18 @@ export const restoreSession = (): Thunk => async (dispatch, getState) => {
   }
   const me = await dispatch(authApi.endpoints.getMe.initiate(undefined, { forceRefetch: true }));
   if (me.data) dispatch(setUser(me.data.user));
+  void dispatch(registerPush());
 };
 
 /** Cierra sesión: invalida el refresh token en el servidor, limpia el dispositivo y la caché. */
 export const logout = (): Thunk => async (dispatch, getState) => {
   const refreshToken = selectRefreshToken(getState()) ?? (await secureStorage.getRefreshToken());
+  const pushToken = getCurrentPushToken() ?? undefined;
   if (refreshToken) {
     // Si falla (sin red) igual se cierra la sesión localmente
-    await dispatch(authApi.endpoints.logout.initiate({ refreshToken })).unwrap().catch(() => undefined);
+    await dispatch(authApi.endpoints.logout.initiate({ refreshToken, pushToken })).unwrap().catch(() => undefined);
   }
+  clearCurrentPushToken();
   await secureStorage.clearRefreshToken();
   dispatch(clearCredentials());
   dispatch(api.util.resetApiState());

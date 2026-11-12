@@ -18,6 +18,7 @@ export default function AppLayout() {
       <Stack.Screen name="groups/[id]/join" options={{ title: 'Solicitar unirme' }} />
       <Stack.Screen name="groups/[id]/members" options={{ title: 'Miembros' }} />
       <Stack.Screen name="groups/[id]/payments" options={{ title: 'Cuotas del grupo' }} />
+      <Stack.Screen name="notifications/index" options={{ title: 'Notificaciones' }} />
       <Stack.Screen name="payments/index" options={{ title: 'Mis cuotas' }} />
       <Stack.Screen name="payments/[id]" options={{ title: 'Cuota' }} />
       <Stack.Screen name="payments/mark-paid" options={{ title: 'Marcar como pagada' }} />
