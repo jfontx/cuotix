@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { createAuthRouter } from './routes/auth';
 import { createGroupsRouter } from './routes/groups';
+import { createMembershipsRouter } from './routes/memberships';
 import { createMeRouter } from './routes/me';
 import { createServicesRouter } from './routes/services';
 
@@ -24,6 +25,7 @@ export function createApp(opts: { forceRateLimit?: boolean } = {}) {
   app.use('/me', createMeRouter());
   app.use('/services', createServicesRouter());
   app.use('/groups', createGroupsRouter());
+  app.use('/memberships', createMembershipsRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);

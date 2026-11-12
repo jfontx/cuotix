@@ -1,11 +1,13 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppButton, AppCard, AppDivider, AppModal, AppScreen, AppText } from '@/components/ui';
 import { getErrorMessage } from '@/lib/api-error';
 import { formatCop, slotsLabel } from '@/lib/format';
+import type { GroupDetail } from '@/store/groupsApi';
 import { useCloseGroupMutation, useGetGroupQuery, useUpdateGroupMutation } from '@/store/groupsApi';
+import { useConfirmAccessMutation, useLeaveMembershipMutation } from '@/store/membershipsApi';
 import { useAppTheme } from '@/theme';
 import { spacing } from '@/theme/spacing';
 
@@ -21,11 +23,15 @@ const MEMBERSHIP_LABEL = {
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const { colors } = useAppTheme();
   const { data, isLoading, error, refetch } = useGetGroupQuery(id);
   const [closeGroup, closing] = useCloseGroupMutation();
   const [updateGroup, updating] = useUpdateGroupMutation();
+  const [confirmAccess, confirming] = useConfirmAccessMutation();
+  const [leaveMembership, leaving] = useLeaveMembershipMutation();
   const [confirmClose, setConfirmClose] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const group = data?.group;
@@ -40,6 +46,44 @@ export default function GroupDetailScreen() {
   const onClose = async () => {
     await run(() => closeGroup(id));
     setConfirmClose(false);
+  };
+
+  const onLeave = async () => {
+    if (group?.myMembership) await run(() => leaveMembership({ id: group.myMembership!.id, groupId: id }));
+    setConfirmLeave(false);
+  };
+
+  const membershipActions = (group: GroupDetail) => {
+    const mine = group.myMembership;
+    const canRequest = !group.isOwner && (!mine || mine.status === 'REJECTED') && group.status === 'OPEN';
+    const isMember = mine?.status === 'APPROVED' || mine?.status === 'ACTIVE';
+    return (
+      <View style={styles.actions}>
+        {canRequest ? (
+          <AppButton
+            title="Solicitar unirme"
+            accessibilityHint="Abre la pantalla para enviar tu solicitud al administrador"
+            onPress={() => router.push(`/groups/${id}/join`)}
+          />
+        ) : null}
+        {mine?.status === 'APPROVED' ? (
+          <AppButton
+            title="Ya tengo acceso al servicio"
+            loading={confirming.isLoading}
+            accessibilityHint="Confirma que el administrador te dio acceso y genera tu primera cuota"
+            onPress={() => run(() => confirmAccess({ id: mine.id, groupId: id }))}
+          />
+        ) : null}
+        {group.isOwner || isMember ? (
+          <AppButton
+            title={group.isOwner ? 'Miembros y solicitudes' : 'Ver miembros'}
+            variant="outline"
+            onPress={() => router.push(`/groups/${id}/members`)}
+          />
+        ) : null}
+        {isMember ? <AppButton title="Salir del grupo" variant="ghost" onPress={() => setConfirmLeave(true)} /> : null}
+      </View>
+    );
   };
 
   return (
@@ -96,6 +140,8 @@ export default function GroupDetailScreen() {
             </AppText>
           ) : null}
 
+          {membershipActions(group)}
+
           {group.isOwner && group.status !== 'CLOSED' ? (
             <View style={styles.actions}>
               <AppButton
@@ -112,6 +158,15 @@ export default function GroupDetailScreen() {
               <AppButton title="Cerrar grupo" variant="danger" onPress={() => setConfirmClose(true)} />
             </View>
           ) : null}
+
+          <AppModal visible={confirmLeave} onClose={() => setConfirmLeave(false)} title="¿Salir del grupo?">
+            <AppText>
+              Dejarás de ser parte del grupo y se cancelarán tus cuotas de los ciclos siguientes. Para volver a entrar
+              tendrías que pedirle ayuda al administrador.
+            </AppText>
+            <AppButton title="Sí, salir del grupo" variant="danger" loading={leaving.isLoading} onPress={onLeave} />
+            <AppButton title="Cancelar" variant="outline" onPress={() => setConfirmLeave(false)} />
+          </AppModal>
 
           <AppModal visible={confirmClose} onClose={() => setConfirmClose(false)} title="¿Cerrar el grupo?">
             <AppText>

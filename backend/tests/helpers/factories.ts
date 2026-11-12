@@ -52,9 +52,14 @@ export async function createGroup(data: Partial<Group> = {}) {
   });
 }
 
-export async function createMembership(data: { groupId: string; userId: string; status?: MembershipStatus }) {
+export async function createMembership(data: {
+  groupId: string;
+  userId: string;
+  status?: MembershipStatus;
+  firstAmount?: number;
+}) {
   return prisma.membership.create({
-    data: { groupId: data.groupId, userId: data.userId, status: data.status ?? 'PENDING' },
+    data: { groupId: data.groupId, userId: data.userId, status: data.status ?? 'PENDING', firstAmount: data.firstAmount },
   });
 }
 

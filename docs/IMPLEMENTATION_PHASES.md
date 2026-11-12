@@ -164,7 +164,7 @@ Componentes reutilizables accesibles que se usarán en toda la app.
 #### Componentes Adicionales (se crean cuando se necesitan)
 - `AppList` - FlatList wrapper → Fase 3 ✅ (listas de grupos)
 - `AppEmptyState` - Estado vacío → Fase 3 ✅ (explorar sin resultados)
-- `AppAvatar` - Avatar de usuario → Fase 4 (lista de miembros)
+- `AppAvatar` - Avatar de usuario → Fase 4 ✅ (lista de miembros)
 - `AppDivider` - Separador → Fase 3 ✅
 - `AppChip` - Filtros/tags → Fase 3 ✅ (filtros de búsqueda)
 - `AppRating` - Estrellas de calificación → Fase 7
@@ -304,53 +304,53 @@ Ciclo completo de membresías: solicitar, aprobar, confirmar acceso, salir/expul
 ### Tareas
 
 #### Backend
-- [ ] `POST /groups/:id/join` - Solicitar unirse
-- [ ] `GET /groups/:id/members` - Listar miembros
-- [ ] `PATCH /memberships/:id/approve` - Aprobar (con firstAmount)
-- [ ] `PATCH /memberships/:id/reject` - Rechazar
-- [ ] `POST /memberships/:id/confirm-access` - Confirmar acceso
-- [ ] `POST /memberships/:id/leave` - Salir del grupo
-- [ ] `POST /memberships/:id/remove` - Expulsar (owner)
-- [ ] Validación transaccional de cupos al aprobar
-- [ ] Crear primera cuota al confirmar acceso
+- [x] `POST /groups/:id/join` - Solicitar unirse
+- [x] `GET /groups/:id/members` - Listar miembros
+- [x] `PATCH /memberships/:id/approve` - Aprobar (con firstAmount)
+- [x] `PATCH /memberships/:id/reject` - Rechazar
+- [x] `POST /memberships/:id/confirm-access` - Confirmar acceso
+- [x] `POST /memberships/:id/leave` - Salir del grupo
+- [x] `POST /memberships/:id/remove` - Expulsar (owner)
+- [x] Validación transaccional de cupos al aprobar
+- [x] Crear primera cuota al confirmar acceso
 
 #### Mobile
-- [ ] RTK Query endpoints (memberships)
-- [ ] Pantalla Members List
-- [ ] Pantalla Join Request (solicitar)
-- [ ] UI para aprobar/rechazar solicitudes
-- [ ] UI para confirmar acceso
-- [ ] Componente MemberCard
+- [x] RTK Query endpoints (memberships)
+- [x] Pantalla Members List
+- [x] Pantalla Join Request (solicitar)
+- [x] UI para aprobar/rechazar solicitudes
+- [x] UI para confirmar acceso
+- [x] Componente MemberCard
 
 ### Tests Requeridos
 
 #### Unit Tests (Backend)
 ```typescript
 // services/memberships.test.ts
-- [ ] joinGroup crea membresía PENDING
-- [ ] joinGroup falla si ya es miembro
-- [ ] joinGroup falla si grupo FULL
-- [ ] approveMembership valida cupos en transacción
-- [ ] approveMembership guarda firstAmount
-- [ ] confirmAccess cambia a ACTIVE
-- [ ] confirmAccess crea primera cuota
-- [ ] confirmAccess falla si no está APPROVED
-- [ ] removeMember falla si < 2 cuotas OVERDUE
-- [ ] leaveMembership establece leavesAt
+- [x] joinGroup crea membresía PENDING
+- [x] joinGroup falla si ya es miembro
+- [x] joinGroup falla si grupo FULL
+- [x] approveMembership valida cupos en transacción
+- [x] approveMembership guarda firstAmount
+- [x] confirmAccess cambia a ACTIVE
+- [x] confirmAccess crea primera cuota
+- [x] confirmAccess falla si no está APPROVED
+- [x] removeMember falla si < 2 cuotas OVERDUE
+- [x] leaveMembership establece leavesAt
 ```
 
 #### Integration Tests (Backend)
 ```typescript
 // integration/memberships.test.ts
-- [ ] POST /groups/:id/join - crea solicitud
-- [ ] POST /groups/:id/join - falla si ya miembro (409)
-- [ ] POST /groups/:id/join - falla si grupo full (409)
-- [ ] PATCH /memberships/:id/approve - valida cupos concurrentes
-- [ ] PATCH /memberships/:id/approve - solo owner (403)
-- [ ] PATCH /memberships/:id/approve - guarda firstAmount
-- [ ] POST /memberships/:id/confirm-access - crea cuota
-- [ ] POST /memberships/:id/confirm-access - solo el miembro (403)
-- [ ] POST /memberships/:id/remove - requiere 2 OVERDUE (409)
+- [x] POST /groups/:id/join - crea solicitud
+- [x] POST /groups/:id/join - falla si ya miembro (409)
+- [x] POST /groups/:id/join - falla si grupo full (409)
+- [x] PATCH /memberships/:id/approve - valida cupos concurrentes
+- [x] PATCH /memberships/:id/approve - solo owner (403)
+- [x] PATCH /memberships/:id/approve - guarda firstAmount
+- [x] POST /memberships/:id/confirm-access - crea cuota
+- [x] POST /memberships/:id/confirm-access - solo el miembro (403)
+- [x] POST /memberships/:id/remove - requiere 2 OVERDUE (409)
 ```
 
 ### Commit
@@ -833,3 +833,18 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Mobile: rutas y paginación (Fase 3).** `(app)` es ahora un Stack con `(tabs)` (Mis grupos / Explorar) y las pantallas `groups/create` y `groups/[id]` encima, con el encabezado nativo para volver. Explorar pagina pidiendo `limit = 20 × páginas` (tope 100) con el botón "Ver más grupos" en vez de fusionar páginas en la caché de RTK Query, para evitar duplicados al invalidar etiquetas. Se añadieron `AppChip`, `AppDivider`, `AppEmptyState` y `AppList` a `src/components/ui`. El botón de unirse al grupo y la lista de miembros se implementan en la Fase 4; el cierre de sesión quedó al final de Mis grupos hasta que exista la pantalla de perfil.
+
+<!-- Decision: 2026-11-12 -->
+**Membresías: solicitud y permisos (Fase 4).** `POST /groups/:id/join` responde `201 { membership }`. Un grupo `FULL` (o sin cupos libres) responde `group/full`; `PAUSED`/`CLOSED` responde `group/closed`; el owner no puede unirse (`general/forbidden`). Como la spec bloquea toda membresía previa salvo `REJECTED`, quien salió (`LEFT`) o fue expulsado (`REMOVED`) no puede volver a solicitar (`group/already-member`); una solicitud `REJECTED` se reutiliza y vuelve a `PENDING`. `GET /groups/:id/members` responde `{ data }`: el owner ve `PENDING`/`APPROVED`/`ACTIVE` (con `firstAmount`); un miembro `APPROVED`/`ACTIVE` solo ve a los `ACTIVE`; el resto recibe 403. Se agregaron los códigos `group/already-member`, `membership/not-found`, `membership/invalid-transition` y `membership/not-eligible-removal`.
+
+<!-- Decision: 2026-11-12 -->
+**Membresías: cupos y estado `FULL`.** Aprobar bloquea la fila del grupo (`SELECT … FOR UPDATE`) dentro de la transacción para que aprobaciones simultáneas no sobrepasen `slots`, y marca el grupo `FULL` al ocupar el último cupo. Salir o ser expulsado reabre un grupo `FULL` en el acto (el estado pasa a `LEFT`/`REMOVED` de inmediato; `leavesAt` solo informa hasta cuándo rige el ciclo). Todas las transiciones usan `updateMany` condicionado al estado esperado, de modo que una doble petición simultánea solo se aplica una vez. No se puede aprobar en un grupo `CLOSED`.
+
+<!-- Decision: 2026-11-12 -->
+**Membresías: primera cuota y fechas.** `confirm-access` crea la cuota del mes actual si el día de pago (hora de Bogotá, UTC-5 fijo) aún no pasó, o del mes siguiente si ya pasó; `dueDate` es el `paymentDay` a las 00:00 de Bogotá (`backend/src/lib/dates.ts`). `leavesAt` es el próximo día de pago estrictamente posterior a hoy; al salir se cancelan las cuotas `PENDING` con vencimiento en `leavesAt` o después (las `OVERDUE`/`MARKED_PAID` se conservan para que el administrador pueda cobrarlas o confirmarlas). Quien aún no ha pagado su primera cuota y sale antes de ese día de pago la ve cancelada.
+
+<!-- Decision: 2026-11-12 -->
+**Membresías: expulsión y notificaciones.** "Consecutivas" se interpreta como dos cuotas `OVERDUE` contiguas en el historial no cancelado (ordenado por `dueDate`); una cuota pagada en medio reinicia la cuenta. Las notificaciones de la fase (`JOIN_REQUEST`, `MEMBERSHIP_APPROVED`, `MEMBERSHIP_REJECTED`, `ACCESS_CONFIRMED`, `MEMBER_REMOVED`) se guardan en la tabla `Notification` (`services/notifications.ts`); el envío push y el endpoint de lectura llegan con la Fase 6. `leave` no emite notificación al owner (no está en la spec).
+
+<!-- Decision: 2026-11-12 -->
+**Mobile: membresías (Fase 4).** El detalle del grupo pasó a `groups/[id]/index.tsx` para alojar `groups/[id]/join` (pantalla de solicitud con resumen y confirmación) y `groups/[id]/members` (solicitudes, esperando acceso y activos). Aprobar abre un modal con monto opcional de primera cuota; expulsar abre un modal con motivo opcional y muestra el error del servidor si aún no es elegible. Salir del grupo pide confirmación. `MemberCard` deja los botones fuera de la tarjeta (un `AppCard` es un único elemento accesible y ocultaría sus botones a los lectores de pantalla). Se añadió `AppAvatar` (decorativo) a `src/components/ui`.
