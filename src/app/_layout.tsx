@@ -1,13 +1,13 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { store, type AppDispatch } from '@/store';
 import { restoreSession } from '@/store/auth-actions';
 import { selectAuthStatus, selectIsAuthenticated } from '@/store/authSlice';
+import { useAppTheme, ThemeProvider as AppThemeProvider } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,14 +35,21 @@ function RootNavigator() {
   );
 }
 
+/** Puente entre el tema de la app y el de React Navigation */
+function NavigationThemeBridge({ children }: { children: React.ReactNode }) {
+  const { isDark } = useAppTheme();
+  return <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>{children}</ThemeProvider>;
+}
+
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   return (
     <Provider store={store}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <AnimatedSplashOverlay />
-        <RootNavigator />
-      </ThemeProvider>
+      <AppThemeProvider>
+        <NavigationThemeBridge>
+          <AnimatedSplashOverlay />
+          <RootNavigator />
+        </NavigationThemeBridge>
+      </AppThemeProvider>
     </Provider>
   );
 }

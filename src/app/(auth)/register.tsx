@@ -1,21 +1,19 @@
 import { Link } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, TextInput } from 'react-native';
 import { useDispatch } from 'react-redux';
 
-import { AuthButton, AuthField, ERROR } from '@/components/auth/auth-form';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { AppButton, AppInput, AppScreen, AppText } from '@/components/ui';
 import { getErrorMessage } from '@/lib/api-error';
 import { fieldErrors, registerSchema } from '@/lib/validation';
 import type { AppDispatch } from '@/store';
 import { startSession } from '@/store/auth-actions';
 import { useRegisterMutation } from '@/store/authApi';
+import { useAppTheme } from '@/theme';
 
 export default function RegisterScreen() {
   const dispatch = useDispatch<AppDispatch>();
+  const { colors } = useAppTheme();
   const [register, { isLoading }] = useRegisterMutation();
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -38,80 +36,70 @@ export default function RegisterScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            <ThemedText type="subtitle" accessibilityRole="header">
-              Crear cuenta
-            </ThemedText>
-            <AuthField
-              label="Nombre"
-              value={form.name}
-              onChangeText={set('name')}
-              error={errors.name}
-              autoComplete="name"
-              textContentType="name"
-              returnKeyType="next"
-              onSubmitEditing={() => emailRef.current?.focus()}
-            />
-            <AuthField
-              ref={emailRef}
-              label="Correo"
-              value={form.email}
-              onChangeText={set('email')}
-              error={errors.email}
-              autoCapitalize="none"
-              autoComplete="email"
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              returnKeyType="next"
-              onSubmitEditing={() => phoneRef.current?.focus()}
-            />
-            <AuthField
-              ref={phoneRef}
-              label="Teléfono (opcional)"
-              value={form.phone}
-              onChangeText={set('phone')}
-              error={errors.phone}
-              keyboardType="phone-pad"
-              autoComplete="tel"
-              textContentType="telephoneNumber"
-              returnKeyType="next"
-              onSubmitEditing={() => passwordRef.current?.focus()}
-            />
-            <AuthField
-              ref={passwordRef}
-              label="Contraseña"
-              value={form.password}
-              onChangeText={set('password')}
-              error={errors.password}
-              secureTextEntry
-              autoComplete="new-password"
-              textContentType="newPassword"
-              returnKeyType="done"
-              onSubmitEditing={submit}
-            />
-            {formError ? (
-              <ThemedText type="small" style={{ color: ERROR }} accessibilityRole="alert">
-                {formError}
-              </ThemedText>
-            ) : null}
-            <AuthButton title="Crear cuenta" onPress={submit} loading={isLoading} />
-            <Link href="/login" style={styles.link}>
-              <ThemedText type="linkPrimary">¿Ya tienes cuenta? Inicia sesión</ThemedText>
-            </Link>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </ThemedView>
+    <AppScreen scrollable centered>
+      <AppText variant="h1">
+        Crear cuenta
+      </AppText>
+      <AppInput
+        label="Nombre"
+        value={form.name}
+        onChangeText={set('name')}
+        error={errors.name}
+        autoComplete="name"
+        textContentType="name"
+        returnKeyType="next"
+        onSubmitEditing={() => emailRef.current?.focus()}
+      />
+      <AppInput
+        ref={emailRef}
+        label="Correo"
+        value={form.email}
+        onChangeText={set('email')}
+        error={errors.email}
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        returnKeyType="next"
+        onSubmitEditing={() => phoneRef.current?.focus()}
+      />
+      <AppInput
+        ref={phoneRef}
+        label="Teléfono (opcional)"
+        value={form.phone}
+        onChangeText={set('phone')}
+        error={errors.phone}
+        keyboardType="phone-pad"
+        autoComplete="tel"
+        textContentType="telephoneNumber"
+        returnKeyType="next"
+        onSubmitEditing={() => passwordRef.current?.focus()}
+      />
+      <AppInput
+        ref={passwordRef}
+        label="Contraseña"
+        value={form.password}
+        onChangeText={set('password')}
+        error={errors.password}
+        secureTextEntry
+        autoComplete="new-password"
+        textContentType="newPassword"
+        returnKeyType="done"
+        onSubmitEditing={submit}
+      />
+      {formError ? (
+        <AppText variant="bodySmall" color={colors.error} accessibilityRole="alert">
+          {formError}
+        </AppText>
+      ) : null}
+      <AppButton title="Crear cuenta" onPress={submit} loading={isLoading} />
+      <Link href="/login" style={styles.link}>
+        <AppText color={colors.primary}>¿Ya tienes cuenta? Inicia sesión</AppText>
+      </Link>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center' },
-  safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth },
-  flex: { flex: 1 },
-  content: { flexGrow: 1, justifyContent: 'center', padding: Spacing.four, gap: Spacing.three },
-  link: { alignSelf: 'center', paddingVertical: Spacing.two },
+  link: { alignSelf: 'center', paddingVertical: 12 },
 });

@@ -145,21 +145,21 @@ Componentes reutilizables accesibles que se usarán en toda la app.
 ### Tareas
 
 #### Theme
-- [ ] `theme/colors.ts` - Paleta light y dark
-- [ ] `theme/typography.ts` - Tamaños y estilos de texto
-- [ ] `theme/spacing.ts` - Espaciado y áreas táctiles
-- [ ] `ThemeProvider` con soporte dark/light
-- [ ] `settingsSlice` - Preferencias (tema, contraste, háptica)
+- [x] `theme/colors.ts` - Paleta light y dark
+- [x] `theme/typography.ts` - Tamaños y estilos de texto
+- [x] `theme/spacing.ts` - Espaciado y áreas táctiles
+- [x] `ThemeProvider` con soporte dark/light
+- [x] `settingsSlice` - Preferencias (tema, contraste, háptica)
 
 #### Componentes Base (Fase 2)
-- [ ] `AppText` - Texto escalable con variantes
-- [ ] `AppButton` - Botón accesible con estados
-- [ ] `AppInput` - Input con label, error, hint
-- [ ] `AppCard` - Card presionable/informativa
-- [ ] `StatusBadge` - Badge de estado con icono+texto
-- [ ] `AppScreen` - Wrapper de pantalla con loading/error
-- [ ] `AppModal` - Modal/bottom sheet accesible
-- [ ] `AppIcon` - Wrapper de iconos con a11y
+- [x] `AppText` - Texto escalable con variantes
+- [x] `AppButton` - Botón accesible con estados
+- [x] `AppInput` - Input con label, error, hint
+- [x] `AppCard` - Card presionable/informativa
+- [x] `StatusBadge` - Badge de estado con icono+texto
+- [x] `AppScreen` - Wrapper de pantalla con loading/error
+- [x] `AppModal` - Modal/bottom sheet accesible
+- [x] `AppIcon` - Wrapper de iconos con a11y
 
 #### Componentes Adicionales (se crean cuando se necesitan)
 - `AppList` - FlatList wrapper → Fase 3 (listas de grupos)
@@ -174,38 +174,38 @@ Componentes reutilizables accesibles que se usarán en toda la app.
 #### Unit Tests (Mobile)
 ```typescript
 // components/AppButton.test.tsx
-- [ ] tiene accessibilityRole="button"
-- [ ] tiene accessibilityLabel con el título
-- [ ] accessibilityState.disabled cuando disabled
-- [ ] accessibilityState.busy cuando loading
-- [ ] no ejecuta onPress si disabled
-- [ ] altura mínima ≥48dp
+- [x] tiene accessibilityRole="button"
+- [x] tiene accessibilityLabel con el título
+- [x] accessibilityState.disabled cuando disabled
+- [x] accessibilityState.busy cuando loading
+- [x] no ejecuta onPress si disabled
+- [x] altura mínima ≥48dp
 
 // components/AppInput.test.tsx
-- [ ] muestra label visible
-- [ ] accessibilityLabel incluye "requerido" si required
-- [ ] muestra error con icono y texto
-- [ ] error tiene accessibilityLiveRegion="polite"
-- [ ] área táctil ≥48dp
+- [x] muestra label visible
+- [x] accessibilityLabel incluye "requerido" si required
+- [x] muestra error con icono y texto
+- [x] error tiene accessibilityLiveRegion="polite"
+- [x] área táctil ≥48dp
 
 // components/StatusBadge.test.tsx
-- [ ] muestra icono para cada estado
-- [ ] muestra texto para cada estado
-- [ ] accessibilityLabel descriptivo
+- [x] muestra icono para cada estado
+- [x] muestra texto para cada estado
+- [x] accessibilityLabel descriptivo
 
 // components/AppCard.test.tsx
-- [ ] accessibilityRole="button" si onPress
-- [ ] accessibilityRole="summary" si no onPress
-- [ ] accessibilityLabel requerido
+- [x] accessibilityRole="button" si onPress
+- [x] accessibilityRole="summary" si no onPress
+- [x] accessibilityLabel requerido
 
 // components/AppText.test.tsx
-- [ ] allowFontScaling es true
-- [ ] aplica variante correcta
-- [ ] soporta accessibilityRole="header"
+- [x] allowFontScaling es true
+- [x] aplica variante correcta
+- [x] soporta accessibilityRole="header"
 
 // components/AppScreen.test.tsx
-- [ ] muestra loading con accessibilityLabel
-- [ ] muestra error con accessibilityLiveRegion
+- [x] muestra loading con accessibilityLabel
+- [x] muestra error con accessibilityLiveRegion
 ```
 
 ### Commit
@@ -811,4 +811,13 @@ Usar este checklist antes de cada commit:
 **Auth: rate limiting.** `express-rate-limit` con límites de B.16 (login 5/15 min por IP+correo, register 10/h, refresh 10/min), configurables con `RATE_LIMIT_LOGIN_MAX`, `RATE_LIMIT_REGISTER_MAX` y `RATE_LIMIT_REFRESH_MAX`. Se desactiva con `NODE_ENV=test` salvo `createApp({ forceRateLimit: true })` (usado por su test). El limitador general de 100/min por usuario queda para una fase posterior. `trust proxy` solo se activa con la variable `TRUST_PROXY` para no permitir suplantar la IP vía `X-Forwarded-For`.
 
 <!-- Decision: 2026-11-12 -->
-**Mobile: sesión.** El access token vive solo en memoria (Redux) y el refresh token en `expo-secure-store`. Al abrir la app, `restoreSession` rota el refresh token guardado y carga `/me`; mientras tanto se mantiene el splash (`status: 'loading'`). El interceptor (`baseQueryWithReauth`) reintenta una vez ante un 401 y comparte una sola renovación entre peticiones simultáneas; si el servidor rechaza el refresh, cierra la sesión, y si no hay red conserva el token guardado. Las rutas se reorganizaron en grupos `(auth)` (login/register) y `(app)` (tabs existentes) protegidos con `Stack.Protected`. Los componentes de formulario de `src/components/auth/` son provisionales; la Fase 2 los reemplaza por los componentes base de UI.
+**Mobile: sesión.** El access token vive solo en memoria (Redux) y el refresh token en `expo-secure-store`. Al abrir la app, `restoreSession` rota el refresh token guardado y carga `/me`; mientras tanto se mantiene el splash (`status: 'loading'`). El interceptor (`baseQueryWithReauth`) reintenta una vez ante un 401 y comparte una sola renovación entre peticiones simultáneas; si el servidor rechaza el refresh, cierra la sesión, y si no hay red conserva el token guardado. Las rutas se reorganizaron en grupos `(auth)` (login/register) y `(app)` (tabs existentes) protegidos con `Stack.Protected`. Los componentes de formulario de `src/components/auth/` fueron provisionales y los reemplazó la Fase 2.
+
+<!-- Decision: 2026-11-12 -->
+**UI: tema (Fase 2).** Los tokens viven en `src/theme/` (`colors`, `typography`, `spacing`) con la paleta de `UI_ACCESSIBILITY_SPEC.md`. Como `AppColors` es semántico (`background`, `surface`, `border`, `text`, `primary`, `error`, `payment.*`…), no se exponen las escalas completas 50–900. Los colores de texto secundario, borde y error se oscurecieron respecto a la escala base para cumplir ≥4.5:1 (texto) y se añadieron variantes de alto contraste. `ThemeProvider` (`src/theme/theme-provider.tsx`) resuelve tema (sistema/claro/oscuro) y alto contraste desde `settingsSlice`, y `src/hooks/use-theme.ts` pasó a ser un adaptador sobre ese tema para que `ThemedText`/`ThemedView` de la plantilla sigan coherentes. El layout raíz alimenta también el tema de React Navigation.
+
+<!-- Decision: 2026-11-12 -->
+**UI: iconos y háptica.** No se añadieron dependencias: `AppIcon` usa `expo-symbols` (SF Symbols en iOS) con un glifo de texto de respaldo en Android/web, y es decorativo (oculto a lectores de pantalla) salvo que reciba `accessibilityLabel`. La preferencia `haptics` existe en `settingsSlice`, pero el feedback háptico de `AppButton` queda pendiente hasta incorporar `expo-haptics`. `settingsSlice` no se persiste todavía (se hará con la pantalla de perfil).
+
+<!-- Decision: 2026-11-12 -->
+**UI: detalles de componentes.** `AppText` asigna `accessibilityRole="header"` por defecto a h1–h3. `AppModal` oculta el fondo táctil a los lectores de pantalla (el botón "Cerrar" del encabezado es el control accesible) para no duplicar el botón. `AppScreen` acepta `centered` para formularios de acceso. Los componentes se exportan desde `@/components/ui`.

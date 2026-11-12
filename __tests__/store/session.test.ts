@@ -4,6 +4,7 @@ import { api } from '@/store/api';
 import { authApi } from '@/store/authApi';
 import { logout, restoreSession, startSession } from '@/store/auth-actions';
 import authReducer, { setCredentials } from '@/store/authSlice';
+import settingsReducer from '@/store/settingsSlice';
 
 const mockStorage: { token: string | null } = { token: null };
 jest.mock('@/lib/secure-storage', () => ({
@@ -22,7 +23,7 @@ const user = { id: 'u1', email: 'a@b.co', name: 'Ana', phone: null, role: 'USER'
 
 function makeStore() {
   return configureStore({
-    reducer: { [api.reducerPath]: api.reducer, auth: authReducer },
+    reducer: { [api.reducerPath]: api.reducer, auth: authReducer, settings: settingsReducer },
     middleware: (gd) => gd().concat(api.middleware),
   });
 }
