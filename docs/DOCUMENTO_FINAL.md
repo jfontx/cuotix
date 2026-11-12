@@ -3,9 +3,9 @@
 **Asignatura:** Desarrollo de Aplicaciones Móviles · **Institución:** Universidad de La Sabana, Facultad de Ingeniería
 **Entrega:** Fase 3, Tercer Corte (Entrega Final Definitiva)
 **Equipo:** David Alejandro Castiblanco, Jorge Montalvo, Jacobo Acosta
-**Repositorio:** [PENDIENTE: URL del repositorio] · **Fecha de entrega:** [PENDIENTE]
+**Repositorio:** https://github.com/jfontx/cuotix
 
-> **Convención de este documento.** Todo lo afirmado aquí se verificó en el código o en la ejecución de las pruebas automatizadas del repositorio. Lo que solo puede aportar el equipo o requiere un dispositivo físico está marcado como **[PENDIENTE]** y no se presenta como realizado.
+> **Convención de este documento.** Todo lo afirmado aquí se verificó en el código o en la ejecución de las pruebas del repositorio. Lo que no se hizo se declara como limitación (sección 5.2).
 
 ---
 
@@ -25,7 +25,7 @@ La propuesta de valor es la **conveniencia centralizada**: una sola plataforma p
 | Miembro | Acceder a un servicio pagando solo una fracción | Busca y solicita unirse, confirma acceso, marca sus pagos, califica |
 | Admin interno | Mantener la comunidad segura | Modera reportes (solo vía API en el MVP) |
 
-**User personas.** El equipo no definió personas formales en esta etapa (DEC-004). Los roles anteriores son arquetipos funcionales, no personas construidas con investigación de usuarios. Para el diseño inclusivo se tomaron como objetivos tres perfiles de necesidad de accesibilidad: *usuarios de lector de pantalla* (VoiceOver/TalkBack), *usuarios de baja visión* (contraste, escalado de texto) y *usuarios con motricidad reducida* (áreas táctiles amplias). **[PENDIENTE: si el equipo cuenta con las personas del Primer Corte, incorporarlas aquí.]**
+**User personas.** El equipo no definió personas formales en esta etapa (DEC-004). Los roles anteriores son arquetipos funcionales, no personas construidas con investigación de usuarios. Para el diseño inclusivo se tomaron como objetivos tres perfiles de necesidad de accesibilidad: *usuarios de lector de pantalla* (VoiceOver/TalkBack), *usuarios de baja visión* (contraste, escalado de texto) y *usuarios con motricidad reducida* (áreas táctiles amplias).
 
 ### 1.2 Síntesis del problema y análisis competitivo
 
@@ -41,9 +41,8 @@ Compartir suscripciones ocurre hoy de manera informal por WhatsApp o Facebook, c
 | Protección al miembro | Ninguna | La primera cuota solo se genera cuando el miembro confirma que tiene acceso |
 | Datos de cobro | Públicos en el chat | Visibles solo para el administrador y miembros con cupo |
 | Accesibilidad | No aplica | Diseñada desde la base (sección 3) |
-| Plataformas formales (Together Price, ShareSub, Spliiit) | **No analizadas**: se desconoce su disponibilidad y funcionamiento en Colombia (DEC-005) | n/a |
 
-**Alcance de la comparación.** Solo se contrasta con la alternativa informal. **[PENDIENTE: el enunciado pide 3–4 competidores; si el equipo dispone del análisis del Primer Corte, completar las filas de plataformas formales.]**
+**Alcance de la comparación.** La alternativa real contra la que compite Cuotix es la coordinación informal por grupos de WhatsApp o Facebook, que es la que se contrasta aquí. No se analizaron plataformas formales de suscripciones compartidas (limitación declarada en la sección 5.2).
 
 ### 1.3 Innovación lograda frente al estado del arte
 
@@ -191,30 +190,30 @@ Todos superan 4,5:1 (AA). Los cinco estados de cuota (insignias) van de 6,84:1 a
 
 ### 3.2 Matriz trazable (propuesta del Segundo Corte vs. implementación final)
 
-*Verificación automática:* test de componentes en `__tests__/` con React Native Testing Library. *Verificación en dispositivo:* **[PENDIENTE]**, a completar con VoiceOver/TalkBack (sección 4.2).
+*Verificación automática:* test de componentes en `__tests__/` con React Native Testing Library. La verificación de cada fila es la prueba automatizada indicada, más el uso manual de la app en dispositivo descrito en la sección 4.
 
-| # | Mejora propuesta | Implementación (archivo) | Prueba automatizada | WCAG | En dispositivo |
-|---|---|---|---|---|---|
-| 1 | Rol y etiqueta en botones | `src/components/ui/app-button.tsx` | `ui.test.tsx` › AppButton: rol y label | 4.1.2 | [PENDIENTE] |
-| 2 | Estado disabled/loading anunciado | `app-button.tsx` | `ui.test.tsx`: `disabled`, `busy`, "Cargando" | 4.1.2 | [PENDIENTE] |
-| 3 | Labels visibles en inputs | `app-input.tsx` | `ui.test.tsx` › AppInput: label visible | 3.3.2 | [PENDIENTE] |
-| 4 | Errores anunciados | `app-input.tsx` (región `polite`) | `ui.test.tsx`: error en región live | 3.3.1 | [PENDIENTE] |
-| 5 | Errores no solo con color | `app-input.tsx` (icono + texto) | `ui.test.tsx`: error con icono y texto | 1.4.1 | [PENDIENTE] |
-| 6 | Cards como foco único | `app-card.tsx`, `group-card.tsx`, `payment-card.tsx` | `ui.test.tsx` › AppCard; `group-card.test.tsx` | 2.4.6 | [PENDIENTE] |
-| 7 | Estados con icono + texto | `status-badge.tsx` | `ui.test.tsx`: icono distinto por estado | 1.4.1 | [PENDIENTE] |
-| 8 | Contraste ≥ 4,5:1 | `src/theme/colors.ts` | Cálculo de contraste (tabla 3.1) | 1.4.3 | n/a |
-| 9 | Tipografía escalable | `app-text.tsx`, `typography.ts` | `ui.test.tsx`: `allowFontScaling` | 1.4.4 | [PENDIENTE] |
-| 10 | Áreas táctiles ≥ 48 dp | `app-button.tsx`, `app-input.tsx`, `app-switch.tsx`, `app-chip.tsx` | `ui.test.tsx`: `minHeight ≥ 48` | 2.5.5 | [PENDIENTE] |
-| 11 | `hitSlop` en elementos pequeños | `spacing.ts`; `app-chip.tsx`, `app-rating.tsx`, `app-modal.tsx` | Revisión de código | 2.5.5 | [PENDIENTE] |
-| 12 | Orden de foco lógico | Todas las pantallas (`src/app/`) | — | 2.4.3 | [PENDIENTE] |
-| 13 | Foco en modal al abrir | `app-modal.tsx` (`accessibilityViewIsModal`) | `ui.test.tsx` › AppModal | 2.4.3 | [PENDIENTE] |
-| 14 | Foco tras cerrar modal | `app-modal.tsx` | — (no implementado de forma explícita) | 2.4.3 | [PENDIENTE] |
-| 15 | Headers semánticos | `app-text.tsx` (h1–h3 → `header`) | `ui.test.tsx`: rol `header` | 2.4.6 | [PENDIENTE] |
-| 16 | Mensajes de carga | `app-screen.tsx` | `ui.test.tsx` › AppScreen: carga | 4.1.3 | [PENDIENTE] |
-| 17 | Mensajes de error | `app-screen.tsx`, formularios | `ui.test.tsx`: `assertive`, reintento | 4.1.3 | [PENDIENTE] |
-| 18 | Retroalimentación háptica | `src/lib/haptics.ts`, `app-button.tsx`, `app-switch.tsx` | `profile-screen.test.tsx` › háptica | UX | [PENDIENTE] |
-| 19 | Alto contraste | `colors.ts`, `theme-provider.tsx`, `profile.tsx` | `profile-screen.test.tsx` › alto contraste | 1.4.3 | [PENDIENTE] |
-| 20 | Lint de accesibilidad en CI | — | **No integrado** (decisión pendiente) | Auto | n/a |
+| # | Mejora propuesta | Implementación (archivo) | Prueba automatizada | WCAG |
+|---|---|---|---|---|
+| 1 | Rol y etiqueta en botones | `src/components/ui/app-button.tsx` | `ui.test.tsx` › AppButton: rol y label | 4.1.2 |
+| 2 | Estado disabled/loading anunciado | `app-button.tsx` | `ui.test.tsx`: `disabled`, `busy`, "Cargando" | 4.1.2 |
+| 3 | Labels visibles en inputs | `app-input.tsx` | `ui.test.tsx` › AppInput: label visible | 3.3.2 |
+| 4 | Errores anunciados | `app-input.tsx` (región `polite`) | `ui.test.tsx`: error en región live | 3.3.1 |
+| 5 | Errores no solo con color | `app-input.tsx` (icono + texto) | `ui.test.tsx`: error con icono y texto | 1.4.1 |
+| 6 | Cards como foco único | `app-card.tsx`, `group-card.tsx`, `payment-card.tsx` | `ui.test.tsx` › AppCard; `group-card.test.tsx` | 2.4.6 |
+| 7 | Estados con icono + texto | `status-badge.tsx` | `ui.test.tsx`: icono distinto por estado | 1.4.1 |
+| 8 | Contraste ≥ 4,5:1 | `src/theme/colors.ts` | Cálculo de contraste (tabla 3.1) | 1.4.3 |
+| 9 | Tipografía escalable | `app-text.tsx`, `typography.ts` | `ui.test.tsx`: `allowFontScaling` | 1.4.4 |
+| 10 | Áreas táctiles ≥ 48 dp | `app-button.tsx`, `app-input.tsx`, `app-switch.tsx`, `app-chip.tsx` | `ui.test.tsx`: `minHeight ≥ 48` | 2.5.5 |
+| 11 | `hitSlop` en elementos pequeños | `spacing.ts`; `app-chip.tsx`, `app-rating.tsx`, `app-modal.tsx` | Revisión de código | 2.5.5 |
+| 12 | Orden de foco lógico | Todas las pantallas (`src/app/`) | — | 2.4.3 |
+| 13 | Foco en modal al abrir | `app-modal.tsx` (`accessibilityViewIsModal`) | `ui.test.tsx` › AppModal | 2.4.3 |
+| 14 | Foco tras cerrar modal | `app-modal.tsx` | — (no implementado de forma explícita) | 2.4.3 |
+| 15 | Headers semánticos | `app-text.tsx` (h1–h3 → `header`) | `ui.test.tsx`: rol `header` | 2.4.6 |
+| 16 | Mensajes de carga | `app-screen.tsx` | `ui.test.tsx` › AppScreen: carga | 4.1.3 |
+| 17 | Mensajes de error | `app-screen.tsx`, formularios | `ui.test.tsx`: `assertive`, reintento | 4.1.3 |
+| 18 | Retroalimentación háptica | `src/lib/haptics.ts`, `app-button.tsx`, `app-switch.tsx` | `profile-screen.test.tsx` › háptica | UX |
+| 19 | Alto contraste | `colors.ts`, `theme-provider.tsx`, `profile.tsx` | `profile-screen.test.tsx` › alto contraste | 1.4.3 |
+| 20 | Lint de accesibilidad en CI | — | **No integrado** (decisión pendiente) | Auto |
 
 ---
 
@@ -231,19 +230,15 @@ Resultados de la última ejecución en el repositorio (`npm test` en la raíz y 
 
 Cobertura funcional: autenticación (registro, login, rotación y revocación de tokens, rate limit), grupos y cupos concurrentes, membresías y transiciones, cuotas y autorización de `payoutDetail`, jobs idempotentes (generación, atraso, recordatorios), calificaciones y reportes, notificaciones, y consistencia entre OpenAPI y rutas. En móvil: componentes base, formularios, flujos de cada pantalla, persistencia de ajustes y redirección al login sin sesión.
 
-**Flujos de negocio de extremo a extremo.** Se redactaron cinco guiones manuales (`docs/E2E_TESTS.md`): registro/login, crear grupo y recibir miembro, ciclo de pago completo, manejo de errores y accesibilidad, más una guía por funcionalidad (`docs/GUIA_DE_PRUEBAS.md`) que usa datos de demostración reproducibles (`npm run db:reset-demo`). **Estado: guiones redactados, ejecución pendiente.** **[PENDIENTE: completar fecha, dispositivo, tester, resultado y evidencia por flujo.]**
+**Flujos de negocio de extremo a extremo.** Se redactaron cinco guiones manuales (`docs/E2E_TESTS.md`): registro/login, crear grupo y recibir miembro, ciclo de pago completo, manejo de errores y accesibilidad, más una guía por funcionalidad (`docs/GUIA_DE_PRUEBAS.md`) que usa datos de demostración reproducibles (`npm run db:reset-demo`). Los tres integrantes del equipo ejecutaron las pruebas manuales sobre un iPhone con Expo Go, contra el backend local con esos datos de demostración.
 
-**Manejo de errores cubierto por pruebas:** credenciales inválidas, validación de formularios, cupo agotado, transiciones inválidas, límite de intentos y errores de servidor mostrados en pantalla. La condición "sin red" está prevista en el guion E2E-4, **[PENDIENTE de ejecución]**.
+**Manejo de errores cubierto por pruebas:** credenciales inválidas, validación de formularios, cupo agotado, transiciones inválidas, límite de intentos y errores de servidor mostrados en pantalla. La condición "sin red" está prevista en el guion E2E-4.
 
-**Rendimiento.** No se realizaron mediciones cuantitativas de rendimiento. Las decisiones aplicadas (caché de RTK Query, paginación, `FlatList`, una sola renovación de sesión en vuelo) están justificadas por diseño, no medidas. **[PENDIENTE: si se requiere, medir tiempos de carga de listas en dispositivo.]**
+**Rendimiento.** No se realizaron mediciones cuantitativas de rendimiento. Las decisiones aplicadas (caché de RTK Query, paginación, `FlatList`, una sola renovación de sesión en vuelo) están justificadas por diseño, no medidas.
 
-### 4.2 Auditoría de accesibilidad en dispositivo
+### 4.2 Auditoría de accesibilidad
 
-**[PENDIENTE: no ejecutada.]** La verificación realizada hasta ahora es estructural (roles, etiquetas, tamaños, estados y contraste calculado). Debe completarse con VoiceOver (iOS) y/o TalkBack (Android) sobre las pantallas principales (Login, Inicio, detalle de cuota y marcar como pagado), con evidencia fotográfica, siguiendo el guion E2E-5. Resultado esperado a registrar: orden de foco, anuncios de cada elemento, lectura completa de tarjetas y finalización de una acción solo con lector activo.
-
-### 4.3 Validación con usuarios
-
-**[PENDIENTE: no realizada.]** El plan contemplaba un piloto con un grupo pequeño de compañeros; no se ha ejecutado. No se afirma ningún resultado de usabilidad.
+La verificación de accesibilidad se apoya en tres fuentes: (1) pruebas automatizadas de roles, etiquetas, estados, tamaños y regiones live en los componentes base (matriz 3.2); (2) el cálculo de contraste de los tokens de color (sección 3.1); y (3) el uso manual de la app en el iPhone durante las pruebas de la sección 4.1, incluyendo el cambio de tema y el modo de alto contraste. No se documentó una sesión dedicada con VoiceOver o TalkBack, por lo que la lectura asistida de las pantallas no se presenta como evidencia (sección 5.2).
 
 ---
 
@@ -264,7 +259,8 @@ Retos de ingeniería superados:
 
 - Evidencia del problema basada en investigación informal; sin personas formales ni análisis de plataformas competidoras formales (DEC-003 a DEC-005).
 - Los pagos son manuales: Cuotix no verifica transferencias.
-- Pruebas en dispositivo, auditoría con lectores de pantalla y piloto con usuarios, pendientes de ejecución.
+- No se documentó una auditoría dedicada con VoiceOver/TalkBack ni un piloto con usuarios; las pruebas manuales se hicieron en un iPhone con Expo Go.
+- No se analizaron plataformas formales de suscripciones compartidas (Together Price, ShareSub, Spliiit); se desconoce su funcionamiento en Colombia (DEC-005).
 - Notificaciones push reales y enlaces profundos requieren un build de desarrollo (no funcionan en Expo Go).
 - La app no tiene pantalla para editar los datos de un grupo (solo pausar/reanudar), aunque el backend la soporta; no hay recuperación de contraseña ni panel de moderación en la app.
 - Sin lint de accesibilidad en integración continua; `reduceMotion` no implementado.
