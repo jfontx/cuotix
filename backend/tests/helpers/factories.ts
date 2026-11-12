@@ -1,11 +1,12 @@
 import type { Group, Membership, MembershipStatus, PaymentStatus, User } from '../../generated/prisma/client';
 import { prisma } from '../../src/lib/prisma';
+import { hashPassword } from '../../src/services/auth';
 
 let counter = 0;
 const next = () => `${Date.now()}-${++counter}`;
 
-// Hash fijo de prueba: la Fase 1 lo reemplaza por hashPassword() real.
-const TEST_PASSWORD_HASH = 'test-hash-not-for-login';
+export const TEST_PASSWORD = 'Password123!';
+let testPasswordHash: Promise<string> | undefined;
 
 export async function createService(data: Partial<Parameters<typeof prisma.service.create>[0]['data']> = {}) {
   return prisma.service.create({
@@ -21,10 +22,11 @@ export async function createService(data: Partial<Parameters<typeof prisma.servi
 }
 
 export async function createUser(data: Partial<User> = {}) {
+  testPasswordHash ??= hashPassword(TEST_PASSWORD);
   return prisma.user.create({
     data: {
       email: `user-${next()}@example.com`,
-      passwordHash: TEST_PASSWORD_HASH,
+      passwordHash: await testPasswordHash,
       name: 'Test User',
       ...data,
     },

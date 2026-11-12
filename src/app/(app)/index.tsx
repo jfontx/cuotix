@@ -1,13 +1,18 @@
 import * as Device from 'expo-device';
 import { Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
 
+import { AuthButton } from '@/components/auth/auth-form';
 import { AnimatedIcon } from '@/components/animated-icon';
 import { HintRow } from '@/components/hint-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import type { AppDispatch } from '@/store';
+import { logout } from '@/store/auth-actions';
+import { selectCurrentUser } from '@/store/authSlice';
 
 function getDevMenuHint() {
   if (Platform.OS === 'web') {
@@ -29,6 +34,9 @@ function getDevMenuHint() {
 }
 
 export default function HomeScreen() {
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector(selectCurrentUser);
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -54,6 +62,9 @@ export default function HomeScreen() {
             hint={<ThemedText type="code">npm run reset-project</ThemedText>}
           />
         </ThemedView>
+
+        {user ? <ThemedText type="small">Sesión iniciada como {user.name}</ThemedText> : null}
+        <AuthButton title="Cerrar sesión" onPress={() => dispatch(logout())} />
 
         {Platform.OS === 'web' && <WebBadge />}
       </SafeAreaView>
