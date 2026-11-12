@@ -7,6 +7,7 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { useNotificationListeners } from '@/hooks/use-notification-listeners';
 import { store, type AppDispatch } from '@/store';
 import { restoreSession } from '@/store/auth-actions';
+import { loadSettings, startSettingsPersistence } from '@/store/settings-actions';
 import { selectAuthStatus, selectIsAuthenticated } from '@/store/authSlice';
 import { useAppTheme, ThemeProvider as AppThemeProvider } from '@/theme';
 
@@ -18,7 +19,13 @@ function RootNavigator() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
+    // Primero se cargan las preferencias y luego se activa el guardado, para no pisarlas con los valores por defecto
+    let stop: (() => void) | undefined;
+    dispatch(loadSettings()).then(() => {
+      stop = startSettingsPersistence(store);
+    });
     dispatch(restoreSession());
+    return () => stop?.();
   }, [dispatch]);
 
   useNotificationListeners(isAuthenticated);

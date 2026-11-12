@@ -4,7 +4,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Provider } from 'react-redux';
 
-import NotificationsScreen from '@/app/(app)/notifications';
+import NotificationsScreen from '@/app/(app)/(tabs)/notifications';
 import { clearCurrentPushToken, getCurrentPushToken, getPushToken, routeForNotification, tagsForNotification } from '@/lib/push';
 import { api } from '@/store/api';
 import { logout, startSession } from '@/store/auth-actions';

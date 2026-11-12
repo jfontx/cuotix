@@ -1,4 +1,4 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ReactNode } from 'react';
 
@@ -16,6 +16,9 @@ export interface AppScreenProps {
   loading?: boolean;
   error?: string;
   onRetry?: () => void;
+  /** Pull to refresh en pantallas `scrollable` */
+  refreshing?: boolean;
+  onRefresh?: () => void;
   headerRight?: ReactNode;
   /** Centra verticalmente el contenido (p. ej. formularios de acceso) */
   centered?: boolean;
@@ -23,7 +26,7 @@ export interface AppScreenProps {
 
 const MAX_CONTENT_WIDTH = 800;
 
-export function AppScreen({ title, children, scrollable = false, loading, error, onRetry, headerRight, centered }: AppScreenProps) {
+export function AppScreen({ title, children, scrollable = false, loading, error, onRetry, refreshing, onRefresh, headerRight, centered }: AppScreenProps) {
   const { colors } = useAppTheme();
 
   let body: ReactNode = children;
@@ -58,7 +61,10 @@ export function AppScreen({ title, children, scrollable = false, loading, error,
             </View>
           ) : null}
           {scrollable && !loading && !error ? (
-            <ScrollView contentContainerStyle={[contentStyle, styles.grow]} keyboardShouldPersistTaps="handled">
+            <ScrollView
+              contentContainerStyle={[contentStyle, styles.grow]}
+              keyboardShouldPersistTaps="handled"
+              refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} /> : undefined}>
               {body}
             </ScrollView>
           ) : (

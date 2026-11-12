@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppButton, AppChip, AppInput, AppScreen, AppText } from '@/components/ui';
 import { getErrorMessage } from '@/lib/api-error';
+import { haptics } from '@/lib/haptics';
 import { createGroupSchema, fieldErrors } from '@/lib/validation';
 import { useCreateGroupMutation, useListServicesQuery } from '@/store/groupsApi';
 import { useAppTheme } from '@/theme';
@@ -45,7 +46,10 @@ export default function CreateGroupScreen() {
 
     const result = await createGroup({ ...parsed.data, description: parsed.data.description || undefined });
     if (result.error) setFormError(getErrorMessage(result.error));
-    else router.replace(`/groups/${result.data.group.id}`);
+    else {
+      haptics.success();
+      router.replace(`/groups/${result.data.group.id}`);
+    }
   };
 
   return (

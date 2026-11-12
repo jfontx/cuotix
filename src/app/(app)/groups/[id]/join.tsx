@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { AppButton, AppCard, AppScreen, AppText } from '@/components/ui';
 import { getErrorMessage } from '@/lib/api-error';
+import { haptics } from '@/lib/haptics';
 import { formatCop, slotsLabel } from '@/lib/format';
 import { useGetGroupQuery } from '@/store/groupsApi';
 import { useJoinGroupMutation } from '@/store/membershipsApi';
@@ -25,6 +26,7 @@ export default function JoinGroupScreen() {
       setJoinError(getErrorMessage(result.error));
       return;
     }
+    haptics.success();
     router.replace(`/groups/${id}`);
   };
 

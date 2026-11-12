@@ -1,7 +1,8 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
+import { setHapticsEnabled } from '@/lib/haptics';
 import { selectSettings } from '@/store/settingsSlice';
 
 import { darkColors, highContrastDark, highContrastLight, lightColors, type AppColors } from './colors';
@@ -19,7 +20,8 @@ const ThemeContext = createContext<AppTheme>(defaultTheme);
 /** Resuelve tema (sistema/claro/oscuro) y alto contraste a partir de `settings`. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
-  const { theme, highContrast } = useSelector(selectSettings);
+  const { theme, highContrast, haptics } = useSelector(selectSettings);
+  useEffect(() => setHapticsEnabled(haptics), [haptics]);
   const isDark = theme === 'system' ? system === 'dark' : theme === 'dark';
 
   const value = useMemo<AppTheme>(() => {

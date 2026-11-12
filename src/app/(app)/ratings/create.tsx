@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { AppButton, AppInput, AppRating, AppScreen, AppText } from '@/components/ui';
 import { getErrorMessage } from '@/lib/api-error';
+import { haptics } from '@/lib/haptics';
 import { useCreateRatingMutation } from '@/store/ratingsApi';
 import { useAppTheme } from '@/theme';
 
@@ -26,7 +27,10 @@ export default function RateUserScreen() {
     const text = comment.trim();
     const result = await createRating({ groupId, toId, score, comment: text || undefined });
     if (result.error) setSubmitError(getErrorMessage(result.error));
-    else router.back();
+    else {
+      haptics.success();
+      router.back();
+    }
   };
 
   return (

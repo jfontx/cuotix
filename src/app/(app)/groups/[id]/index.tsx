@@ -25,7 +25,7 @@ export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors } = useAppTheme();
-  const { data, isLoading, error, refetch } = useGetGroupQuery(id);
+  const { data, isLoading, isFetching, error, refetch } = useGetGroupQuery(id);
   const [closeGroup, closing] = useCloseGroupMutation();
   const [updateGroup, updating] = useUpdateGroupMutation();
   const [confirmAccess, confirming] = useConfirmAccessMutation();
@@ -102,7 +102,7 @@ export default function GroupDetailScreen() {
   };
 
   return (
-    <AppScreen scrollable loading={isLoading} error={error ? getErrorMessage(error) : undefined} onRetry={refetch}>
+    <AppScreen scrollable refreshing={isFetching && !isLoading} onRefresh={refetch} loading={isLoading} error={error ? getErrorMessage(error) : undefined} onRetry={refetch}>
       {group ? (
         <>
           <AppText variant="h1">{group.title}</AppText>

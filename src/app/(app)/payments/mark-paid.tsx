@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { AppButton, AppCard, AppInput, AppScreen, AppText } from '@/components/ui';
 import { getErrorMessage } from '@/lib/api-error';
+import { haptics } from '@/lib/haptics';
 import { formatCop } from '@/lib/format';
 import { formatDueDate, isPayable, periodTitle } from '@/lib/payments';
 import { useGetPaymentQuery, useMarkPaidMutation } from '@/store/paymentsApi';
@@ -24,7 +25,10 @@ export default function MarkPaidScreen() {
     const text = reference.trim();
     const result = await markPaid({ id, reference: text || undefined });
     if (result.error) setSubmitError(getErrorMessage(result.error));
-    else router.back();
+    else {
+      haptics.success();
+      router.back();
+    }
   };
 
   return (

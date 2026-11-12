@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { AppButton, AppCard, AppDivider, AppInput, AppModal, AppScreen, AppText, StatusBadge } from '@/components/ui';
 import { getErrorMessage } from '@/lib/api-error';
+import { haptics } from '@/lib/haptics';
 import { formatCop } from '@/lib/format';
 import { BADGE_STATUS, formatDueDate, isPayable, periodTitle } from '@/lib/payments';
 import { selectCurrentUser } from '@/store/authSlice';
@@ -19,7 +20,7 @@ export default function PaymentDetailScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const user = useSelector(selectCurrentUser);
-  const { data, isLoading, error, refetch } = useGetPaymentQuery(id);
+  const { data, isLoading, isFetching, error, refetch } = useGetPaymentQuery(id);
   const [confirm, confirming] = useConfirmPaymentMutation();
   const [reject, rejecting] = useRejectPaymentMutation();
 
@@ -35,6 +36,8 @@ export default function PaymentDetailScreen() {
     setActionError(null);
     const result = await action();
     if (result.error) setActionError(getErrorMessage(result.error as Parameters<typeof getErrorMessage>[0]));
+    if (result.error) haptics.error();
+    else haptics.success();
     return !result.error;
   };
 
@@ -54,7 +57,7 @@ export default function PaymentDetailScreen() {
   };
 
   return (
-    <AppScreen scrollable loading={isLoading} error={error ? getErrorMessage(error) : undefined} onRetry={refetch}>
+    <AppScreen scrollable refreshing={isFetching && !isLoading} onRefresh={refetch} loading={isLoading} error={error ? getErrorMessage(error) : undefined} onRetry={refetch}>
       {payment ? (
         <>
           <AppText variant="h1">{periodTitle(payment.period)}</AppText>
