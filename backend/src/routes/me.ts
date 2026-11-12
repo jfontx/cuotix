@@ -3,8 +3,10 @@ import { Router } from 'express';
 import { AppError } from '../lib/errors';
 import { prisma } from '../lib/prisma';
 import { authenticate } from '../middleware/authenticate';
-import { validateBody } from '../middleware/validate';
+import { validateBody, validateQuery } from '../middleware/validate';
 import { updateProfileSchema } from '../schemas/auth';
+import { listPaymentsQuerySchema, type ListPaymentsQuery } from '../schemas/payments';
+import { listMyPayments } from '../services/payments';
 import { toPublicUser } from '../services/users';
 
 export function createMeRouter() {
@@ -25,6 +27,10 @@ export function createMeRouter() {
         throw err;
       });
     res.json({ user: toPublicUser(user) });
+  });
+
+  router.get('/payments', validateQuery(listPaymentsQuerySchema), async (req, res) => {
+    res.json({ data: await listMyPayments(req.auth!.userId, res.locals.query as ListPaymentsQuery) });
   });
 
   return router;
