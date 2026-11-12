@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GroupStatus {
+  OPEN
+  FULL
+  PAUSED
+  CLOSED
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  ACTIVE
+  REJECTED
+  LEFT
+  REMOVED
+}
+
+enum PaymentStatus {
+  PENDING
+  MARKED_PAID
+  CONFIRMED
+  OVERDUE
+  CANCELLED
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum NotificationType {
+  PAYMENT_REMINDER
+  PAYMENT_OVERDUE
+  PAYMENT_MARKED_PAID
+  PAYMENT_CONFIRMED
+  PAYMENT_REJECTED
+  JOIN_REQUEST
+  MEMBERSHIP_APPROVED
+  MEMBERSHIP_REJECTED
+  ACCESS_CONFIRMED
+  GROUP_CLOSED
+  MEMBER_REMOVED
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  passwordHash    String
+  name            String
+  phone           String?
+  role            Role           @default(USER)
+  createdAt       DateTime       @default(now())
+  groupsOwned     Group[]        @relation("GroupOwner")
+  memberships     Membership[]
+  pushTokens      PushToken[]
+  refreshTokens   RefreshToken[]
+  notifications   Notification[]
+  ratingsGiven    Rating[]       @relation("RatingsGiven")
+  ratingsReceived Rating[]       @relation("RatingsReceived")
+  reportsCreated  Report[]       @relation("ReportsCreated")
+  reportsReceived Report[]       @relation("ReportsReceived")
+}
+
+model Service {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  planType        String
+  maxMembers      Int
+  allowsOutOfHome Boolean
+  notes           String?
+  lastReviewedAt  DateTime
+  groups          Group[]
+}
+
+model Group {
+  id             String       @id @default(uuid())
+  ownerId        String
+  serviceId      String
+  title          String
+  description    String?
+  pricePerMember Int
+  paymentDay     Int
+  slots          Int
+  status         GroupStatus  @default(OPEN)
+  payoutMethod   String
+  payoutDetail   String
+  createdAt      DateTime     @default(now())
+  owner          User         @relation("GroupOwner", fields: [ownerId], references: [id])
+  service        Service      @relation(fields: [serviceId], references: [id])
+  memberships    Membership[]
+  ratings        Rating[]
+  reports        Report[]
+}
+
+model Membership {
+  id          String           @id @default(uuid())
+  groupId     String
+  userId      String
+  status      MembershipStatus @default(PENDING)
+  joinedAt    DateTime?
+  leavesAt    DateTime?
+  firstAmount Int?
+  group       Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cycles      PaymentCycle[]
+
+  @@unique([groupId, userId])
+}
+
+model PaymentCycle {
+  id              String        @id @default(uuid())
+  membershipId    String
+  period          String
+  amount          Int
+  dueDate         DateTime
+  status          PaymentStatus @default(PENDING)
+  reference       String?
+  markedPaidAt    DateTime?
+  confirmedAt     DateTime?
+  rejectionReason String?
+  overdueAt       DateTime?
+  membership      Membership    @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, period])
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  groupId   String
+  fromId    String
+  toId      String
+  score     Int
+  comment   String?
+  createdAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  fromUser  User     @relation("RatingsGiven", fields: [fromId], references: [id], onDelete: Cascade)
+  toUser    User     @relation("RatingsReceived", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, fromId, toId])
+}
+
+model Report {
+  id         String       @id @default(uuid())
+  groupId    String
+  reporterId String
+  reportedId String
+  reason     String
+  detail     String?
+  status     ReportStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+  group      Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  reporter   User         @relation("ReportsCreated", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported   User         @relation("ReportsReceived", fields: [reportedId], references: [id], onDelete: Cascade)
+}
+
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  platform  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  paymentId String?
+  data      Json?
+  read      Boolean          @default(false)
+  sentAt    DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, paymentId])
+}

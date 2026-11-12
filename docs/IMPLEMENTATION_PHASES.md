@@ -775,3 +775,16 @@ Usar este checklist antes de cada commit:
 - [ ] Revisado que no hay console.logs olvidados
 - [ ] Revisado que no hay credenciales hardcodeadas
 ```
+
+---
+
+## Decisiones de implementación
+
+<!-- Decision: 2026-11-12 -->
+**Estructura del repositorio (Fase 0).** El proyecto Expo ya existía en la raíz, con rutas en `src/app/` (según `AGENTS.md`). En lugar de moverlo a `mobile/`, la app móvil permanece en la raíz y el backend vive en `backend/` con su propio `package.json`. El `docker-compose.yml` está en la raíz.
+
+<!-- Decision: 2026-11-12 -->
+**Prisma 7.** Se usa Prisma 7 con driver adapter (`@prisma/adapter-pg`), `prisma.config.ts` y generador `prisma-client` con `moduleFormat = "cjs"` (necesario para ts-jest). El cliente se genera en `backend/generated/prisma` (ignorado por git). TypeScript del backend queda en 5.9 por compatibilidad con ts-jest.
+
+<!-- Decision: 2026-11-12 -->
+**Credenciales de desarrollo.** El rol/BD local es `cuotix`/`cuotix`. `backend/.env.test` se versiona porque solo contiene valores de prueba; `backend/.env` está ignorado.

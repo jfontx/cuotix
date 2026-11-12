@@ -1,56 +1,67 @@
-# Welcome to your Expo app 👋
+# Cuotix
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App móvil para compartir costos de suscripciones. *Comparte tus suscripciones, paga solo tu cuota.*
 
-## Get started
+## Estructura
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+cuotix/
+├── src/               # App móvil (Expo + Expo Router): src/app, src/store, ...
+├── __tests__/         # Tests móviles (jest-expo + React Native Testing Library)
+├── backend/           # API (Node + Express + Prisma + PostgreSQL)
+│   ├── prisma/        # schema.prisma y migraciones
+│   ├── src/
+│   └── tests/         # Jest + Supertest
+├── docs/              # Especificaciones y decisiones
+└── docker-compose.yml # API + PostgreSQL para desarrollo local
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Requisitos
 
-### Other setup steps
+- Node 22+
+- PostgreSQL 17+ (local) **o** Docker
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Backend
 
-## Learn more
+```bash
+cd backend
+cp .env.example .env
+npm install
 
-To learn more about developing your project with Expo, look at the following resources:
+# Opción A: PostgreSQL con Docker (desde la raíz: docker compose up db -d)
+# Opción B: PostgreSQL local con un rol/BD `cuotix` (contraseña `cuotix`)
+#   y una BD `cuotix_test` para los tests.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+npx prisma migrate dev     # aplica migraciones y genera el cliente
+npm run dev                # http://localhost:3000/health
+```
 
-## Join the community
+### Tests del backend
 
-Join our community of developers creating universal apps.
+```bash
+cd backend
+npm run test:db:migrate    # aplica migraciones a cuotix_test
+npm test
+npm run typecheck
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+La configuración de test vive en `backend/.env.test`.
+
+## Móvil
+
+```bash
+npm install
+npx expo start
+```
+
+```bash
+npm test            # Jest
+npx expo lint
+npx tsc --noEmit
+```
+
+Variable opcional: `EXPO_PUBLIC_API_URL` (por defecto `http://localhost:3000`).
+
+## Docs
+
+Ver `docs/IMPLEMENTATION_PHASES.md` para el orden de implementación.
