@@ -1,6 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 
+import { haptics } from '@/lib/haptics';
 import { useAppTheme } from '@/theme';
 import { borderRadius, spacing, touchable } from '@/theme/spacing';
 
@@ -57,7 +58,10 @@ export function AppButton({
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
       hitSlop={touchable.hitSlop}
-      onPress={onPress}
+      onPress={() => {
+        if (variant !== 'ghost') haptics.tap();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.base,
         {

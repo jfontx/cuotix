@@ -578,41 +578,41 @@ Integrar todos los flujos, pulir UI y preparar para demo.
 ### Tareas
 
 #### Mobile
-- [ ] Pantalla Profile completa (settings, logout)
-- [ ] Navegación completa con tabs
-- [ ] Estados de carga y error en todas las pantallas
-- [ ] Empty states en listas vacías
-- [ ] Pull to refresh en listas
-- [ ] Feedback háptico en acciones importantes
-- [ ] Alto contraste toggle funcional
-- [ ] Deep linking básico
+- [x] Pantalla Profile completa (settings, logout)
+- [x] Navegación completa con tabs
+- [x] Estados de carga y error en todas las pantallas
+- [x] Empty states en listas vacías
+- [x] Pull to refresh en listas
+- [x] Feedback háptico en acciones importantes
+- [x] Alto contraste toggle funcional
+- [x] Deep linking básico
 
 #### Backend
-- [ ] Seed completo para demo
-- [ ] Documentación OpenAPI actualizada
-- [ ] Script de reset de BD para demo
+- [x] Seed completo para demo
+- [x] Documentación OpenAPI actualizada
+- [x] Script de reset de BD para demo
 
 #### General
-- [ ] README con instrucciones completas
-- [ ] Verificar accesibilidad en todas las pantallas
-- [ ] Fix de bugs encontrados
+- [x] README con instrucciones completas
+- [x] Verificar accesibilidad en todas las pantallas
+- [x] Fix de bugs encontrados
 
 ### Tests Requeridos
 
 #### Tests de pantallas (Mobile)
 ```typescript
 // screens/Login.test.tsx
-- [ ] renderiza formulario completo
-- [ ] valida campos requeridos
-- [ ] navega a register
-- [ ] muestra error de credenciales
+- [x] renderiza formulario completo
+- [x] valida campos requeridos
+- [x] navega a register
+- [x] muestra error de credenciales
 
 // screens/Home.test.tsx
-- [ ] muestra grupos del usuario
-- [ ] muestra empty state si no hay grupos
-- [ ] navega a crear grupo
+- [x] muestra grupos del usuario
+- [x] muestra empty state si no hay grupos
+- [x] navega a crear grupo
 
-// Similar para cada pantalla...
+// Similar para cada pantalla... (cubiertas en __tests__/*-screens.test.tsx y profile-screen.test.tsx)
 ```
 
 ### Commit
@@ -881,3 +881,18 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Mobile: calificaciones y reportes (Fase 7).** Nuevo `AppRating` en `src/components/ui`: editable (cinco `radio` de ≥48dp con etiqueta "N estrellas") o solo lectura (un único elemento "Calificación: X de 5 estrellas"); las estrellas llenas/vacías se distinguen por glifo (★/☆), no solo por color. Rutas: `users/[id]` (perfil con promedio y lista; con `groupId` ofrece "Calificar" y "Reportar usuario"), `ratings/create` y `reports/create` (motivo con `AppChip` + detalle opcional). Se llega al perfil desde "Ver perfil" en la lista de miembros y desde "Perfil de {administrador}" en el detalle del grupo (miembros activos o que salieron). La elegibilidad la decide el servidor y su mensaje se muestra en pantalla.
+
+<!-- Decision: 2026-11-12 -->
+**Mobile: tabs y Perfil (Fase 8).** Cuatro pestañas (Inicio, Explorar, Notificaciones, Perfil, como en la spec §8.4). Los iconos nativos usan `sf` (iOS) y `md` (Android) en vez de PNG nuevos, y la pestaña de notificaciones muestra el contador de no leídas. La bandeja pasó de `notifications/index` a `(tabs)/notifications` (la URL `/notifications` no cambia, así que los pushes y enlaces siguen funcionando). Inicio conserva "Crear grupo" y "Mis cuotas"; "Notificaciones" y "Cerrar sesión" salieron de ahí y viven en las pestañas/Perfil. En Perfil: tema (Sistema/Claro/Oscuro con `AppChip`), alto contraste y vibración (nuevo `AppSwitch`), editar nombre/teléfono, acceso a mis calificaciones y cuotas, y cierre de sesión. No se implementaron "Métodos de cobro" ni "Cambiar contraseña" (no hay endpoints) ni `reduceMotion` (no hay animaciones propias que reducir).
+
+<!-- Decision: 2026-11-12 -->
+**Ajustes persistentes y háptica (Fase 8).** `settingsSlice` se guarda como JSON en `expo-secure-store` (`cuotix.settings`; no es sensible, pero evita añadir AsyncStorage). `loadSettings` valida cada campo y ignora lo inválido; la persistencia se activa después de cargar para no pisar lo guardado. Se añadió `expo-haptics` (módulo de Expo): `AppButton` vibra suave al presionar (salvo `ghost`), `AppSwitch` hace feedback de selección y los flujos de pagar/confirmar/rechazar, calificar, crear grupo y solicitar unirse vibran con éxito o error. `ThemeProvider` sincroniza la preferencia `haptics` con `lib/haptics`, que también traga cualquier fallo del motor háptico.
+
+<!-- Decision: 2026-11-12 -->
+**Estados, refresh y deep linking (Fase 8).** Las listas ya tenían carga/error/vacío/refresh; `AppScreen` ahora acepta `refreshing`/`onRefresh` (pull to refresh en pantallas `scrollable`) y lo usan detalle de grupo, miembros, perfil de usuario y detalle de cuota. El esquema `cuotix://` ya estaba en `app.json`; se añadió `anchor: '(tabs)'` en `(app)` para que un enlace profundo quede sobre las pestañas, y `+not-found` para rutas desconocidas. Un enlace sin sesión iniciada no recuerda el destino tras el login (fuera del alcance del MVP).
+
+<!-- Decision: 2026-11-12 -->
+**Panel de moderación fuera de la app.** Se mantiene como API (`GET/PATCH /reports`, con el usuario `moderator@example.com` del seed); no hay pantalla de administrador en el MVP.
+
+<!-- Decision: 2026-11-12 -->
+**Demo y OpenAPI (Fase 8).** `backend/prisma/seed-demo.ts` (`npm run db:reset-demo`) vacía la BD y carga el catálogo más los usuarios de `IMPLEMENTATION_SPEC.md` E (`owner/member/member2/moderator@example.com`, `Test1234!`) y dos extra (solicitante y aprobado), 3 grupos y cuotas en todos los estados con fechas relativas a "hoy". Se niega a correr con `NODE_ENV=production`. La especificación OpenAPI 3.0 está escrita a mano en `docs/openapi.yaml` (sin dependencias nuevas); un test verifica que coincida con las rutas de Express en ambos sentidos, aunque no valida los esquemas de respuesta. La verificación de accesibilidad fue estructural (roles, etiquetas, tamaños táctiles y estados en tests); falta una pasada manual con VoiceOver/TalkBack en dispositivo.

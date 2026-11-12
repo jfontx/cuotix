@@ -58,6 +58,31 @@ npm run typecheck
 
 La configuración de test vive en `backend/.env.test`.
 
+## Demo
+
+```bash
+cd backend
+npm run db:reset-demo      # borra los datos y carga catálogo + datos de ejemplo (no corre con NODE_ENV=production)
+npm run dev
+```
+
+Usuarios (contraseña `Test1234!`):
+
+| Correo | Rol | Qué muestra |
+|--------|-----|-------------|
+| `owner@example.com` | administrador de 2 grupos | solicitud pendiente, miembro aprobado, cuota por confirmar, cuota atrasada |
+| `member@example.com` | miembro activo | cuota ya marcada como pagada; administra el grupo de Netflix |
+| `member2@example.com` | miembro activo | cuota atrasada y cuota vigente |
+| `solicitante@example.com` | solicitud `PENDING` | esperando aprobación |
+| `aprobado@example.com` | membresía `APPROVED` | puede confirmar acceso |
+| `moderator@example.com` | `ADMIN` | puede listar reportes por API (`GET /reports`) |
+
+Las fechas de las cuotas son relativas al día en que se ejecuta el reset. Para simular el paso del tiempo: `npm run jobs:run -- --date=2026-12-16`.
+
+## API
+
+La especificación OpenAPI está en [`docs/openapi.yaml`](docs/openapi.yaml) (puede abrirse en https://editor.swagger.io). Un test verifica que cubra todas las rutas del código.
+
 ## Móvil
 
 ```bash
@@ -65,13 +90,32 @@ npm install
 npx expo start
 ```
 
+Variable opcional: `EXPO_PUBLIC_API_URL` (por defecto `http://localhost:3000`). En un dispositivo físico usa la IP de tu máquina, no `localhost`.
+
+Las notificaciones push requieren un build de desarrollo (no Expo Go) y un `projectId` de EAS.
+
 ```bash
 npm test            # Jest
 npx expo lint
 npx tsc --noEmit
 ```
 
-Variable opcional: `EXPO_PUBLIC_API_URL` (por defecto `http://localhost:3000`).
+### Navegación
+
+Cuatro pestañas: **Inicio** (mis grupos), **Explorar**, **Notificaciones** (con contador de no leídas) y **Perfil** (tema, alto contraste, vibración, editar perfil, cerrar sesión). Los ajustes se guardan en el dispositivo.
+
+### Enlaces profundos
+
+Esquema `cuotix://`. Al abrir un enlace, la pantalla queda sobre las pestañas (se puede volver). Una ruta desconocida muestra una pantalla con acceso al inicio. Requiere sesión iniciada.
+
+| Enlace | Pantalla |
+|--------|----------|
+| `cuotix://notifications` | Notificaciones |
+| `cuotix://groups/<id>` | Detalle del grupo |
+| `cuotix://payments/<id>` | Detalle de la cuota |
+| `cuotix://users/<id>` | Perfil y calificaciones |
+
+Probar: `npx uri-scheme open "cuotix://notifications" --ios` (o `--android`).
 
 ## Docs
 

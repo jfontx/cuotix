@@ -24,7 +24,7 @@ export default function MembersScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const group = useGetGroupQuery(id).data?.group;
-  const { data, isLoading, error, refetch } = useListMembersQuery(id);
+  const { data, isLoading, isFetching, error, refetch } = useListMembersQuery(id);
   const [approve, approving] = useApproveMembershipMutation();
   const [reject, rejecting] = useRejectMembershipMutation();
   const [remove, removing] = useRemoveMemberMutation();
@@ -102,7 +102,7 @@ export default function MembersScreen() {
     ) : null;
 
   return (
-    <AppScreen scrollable loading={isLoading} error={error ? getErrorMessage(error) : undefined} onRetry={refetch}>
+    <AppScreen scrollable refreshing={isFetching && !isLoading} onRefresh={refetch} loading={isLoading} error={error ? getErrorMessage(error) : undefined} onRetry={refetch}>
       {group ? (
         <AppText color={colors.textSecondary}>
           {group.title} · {group.occupiedSlots} de {group.slots} cupos ocupados

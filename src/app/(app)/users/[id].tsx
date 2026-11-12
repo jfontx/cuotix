@@ -34,13 +34,13 @@ export default function UserProfileScreen() {
   const { id, groupId } = useLocalSearchParams<{ id: string; groupId?: string }>();
   const router = useRouter();
   const { colors } = useAppTheme();
-  const { data, isLoading, error, refetch } = useGetUserRatingsQuery(id);
+  const { data, isLoading, isFetching, error, refetch } = useGetUserRatingsQuery(id);
 
   const name = data?.user.name ?? '';
   const params = { toId: id, groupId: groupId ?? '', name };
 
   return (
-    <AppScreen scrollable loading={isLoading} error={error ? getErrorMessage(error) : undefined} onRetry={refetch}>
+    <AppScreen scrollable refreshing={isFetching && !isLoading} onRefresh={refetch} loading={isLoading} error={error ? getErrorMessage(error) : undefined} onRetry={refetch}>
       {data ? (
         <>
           <View style={styles.header}>

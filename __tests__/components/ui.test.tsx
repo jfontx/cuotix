@@ -232,3 +232,23 @@ describe('tema y settings', () => {
     expect(Object.keys(lightColors).sort()).toEqual(Object.keys(darkColors).sort());
   });
 });
+
+describe('AppScreen pull to refresh', () => {
+  it('scrollable con onRefresh monta RefreshControl y lo dispara', async () => {
+    const onRefresh = jest.fn();
+    await wrap(
+      <AppScreen scrollable refreshing={false} onRefresh={onRefresh}>
+        <Text>Contenido</Text>
+      </AppScreen>,
+    );
+    // El mock de ScrollView expone el RefreshControl como prop del nodo host
+    const find = (node: any): any =>
+      !node || typeof node === 'string' ? undefined : node.props?.refreshControl ?? [node.children ?? []].flat().map(find).find(Boolean);
+    const refresh = find(screen.toJSON());
+    expect(refresh).toBeTruthy();
+    await act(async () => {
+      refresh.props.onRefresh();
+    });
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+});

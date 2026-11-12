@@ -10,5 +10,6 @@ export * from './app-list';
 export * from './app-rating';
 export * from './app-modal';
 export * from './app-screen';
+export * from './app-switch';
 export * from './app-text';
 export * from './status-badge';

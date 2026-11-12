@@ -603,8 +603,8 @@ ratings/
 | 15 | Headers semánticos | Pantallas con secciones | TalkBack navega headers | 2.4.6 | Pendiente |
 | 16 | Mensajes de carga | `AppScreen.tsx` | TalkBack anuncia "Cargando" | 4.1.3 | Pendiente |
 | 17 | Mensajes de error | `AppScreen.tsx`, forms | TalkBack anuncia error | 4.1.3 | Pendiente |
-| 18 | Retroalimentación háptica | Acciones importantes | Vibración configurable | UX | Pendiente |
-| 19 | Alto contraste toggle | `profile.tsx` | Colores cambian | 1.4.3 | Pendiente |
+| 18 | Retroalimentación háptica | Acciones importantes | Vibración configurable | UX | Implementado |
+| 19 | Alto contraste toggle | `profile.tsx` | Colores cambian | 1.4.3 | Implementado |
 | 20 | eslint-plugin-react-native-a11y | CI | Lint pasa sin warnings | Auto | Pendiente |
 
 ---

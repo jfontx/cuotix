@@ -17,3 +17,11 @@ jest.mock('expo-notifications', () => ({
   AndroidImportance: { HIGH: 4 },
   DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
 }));
+
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(async () => undefined),
+  notificationAsync: jest.fn(async () => undefined),
+  selectionAsync: jest.fn(async () => undefined),
+  ImpactFeedbackStyle: { Light: 'light' },
+  NotificationFeedbackType: { Success: 'success', Error: 'error' },
+}));
