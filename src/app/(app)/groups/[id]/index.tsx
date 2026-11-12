@@ -81,6 +81,13 @@ export default function GroupDetailScreen() {
             onPress={() => router.push(`/groups/${id}/members`)}
           />
         ) : null}
+        {group.isOwner || mine?.status === 'ACTIVE' ? (
+          <AppButton
+            title={group.isOwner ? 'Cuotas del grupo' : 'Mis cuotas del grupo'}
+            variant="outline"
+            onPress={() => router.push(`/groups/${id}/payments`)}
+          />
+        ) : null}
         {isMember ? <AppButton title="Salir del grupo" variant="ghost" onPress={() => setConfirmLeave(true)} /> : null}
       </View>
     );
