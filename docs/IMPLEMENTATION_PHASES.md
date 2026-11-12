@@ -28,27 +28,27 @@ Estructura base del monorepo, configuración de herramientas y esquema de BD.
 ### Tareas
 
 #### Backend
-- [ ] Inicializar proyecto Node.js + TypeScript + Express
-- [ ] Configurar Prisma con PostgreSQL
-- [ ] Crear schema.prisma completo (todos los modelos)
-- [ ] Configurar Docker Compose (API + PostgreSQL)
-- [ ] Configurar Jest + Supertest
-- [ ] Crear helpers de test (db, factories, auth)
-- [ ] Variables de entorno (.env.example)
+- [x] Inicializar proyecto Node.js + TypeScript + Express
+- [x] Configurar Prisma con PostgreSQL
+- [x] Crear schema.prisma completo (todos los modelos)
+- [x] Configurar Docker Compose (API + PostgreSQL)
+- [x] Configurar Jest + Supertest
+- [x] Crear helpers de test (db, factories, auth)
+- [x] Variables de entorno (.env.example)
 
 #### Mobile
-- [ ] Inicializar proyecto Expo + TypeScript
-- [ ] Configurar Expo Router (estructura de carpetas)
-- [ ] Configurar jest-expo + React Native Testing Library
-- [ ] Instalar dependencias base (RTK, Zod, etc.)
+- [x] Inicializar proyecto Expo + TypeScript
+- [x] Configurar Expo Router (estructura de carpetas)
+- [x] Configurar jest-expo + React Native Testing Library
+- [x] Instalar dependencias base (RTK, Zod, etc.)
 
 #### Docs
-- [ ] README.md con instrucciones de setup
+- [x] README.md con instrucciones de setup
 
 ### Tests Requeridos
-- [ ] `backend`: Conexión a BD de prueba funciona
-- [ ] `backend`: Migraciones se ejecutan correctamente
-- [ ] `mobile`: App inicia sin errores
+- [x] `backend`: Conexión a BD de prueba funciona
+- [x] `backend`: Migraciones se ejecutan correctamente
+- [x] `mobile`: App inicia sin errores
 
 ### Commit
 ```
@@ -788,3 +788,6 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Credenciales de desarrollo.** El rol/BD local es `cuotix`/`cuotix`. `backend/.env.test` se versiona porque solo contiene valores de prueba; `backend/.env` está ignorado.
+
+<!-- Decision: 2026-11-12 -->
+**Proceso.** Cada decisión relevante se documenta en esta sección y los checkboxes de cada fase se marcan `[x]` al completarse. Docker se usa solo por CLI (Colima), sin Docker Desktop; `docker-compose.yml` aún no fue probado.
