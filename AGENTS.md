@@ -170,3 +170,37 @@ If a specification has a gap or ambiguity not covered by the docs:
 - Adding new dependencies not in tech stack
 - Changing the database schema structure
 - Modifying the phase order
+
+### Phase Completion - MANDATORY STOP
+
+**CRITICAL: After completing each phase, you MUST STOP and wait for a new session.**
+
+When a phase is complete (all tasks done, tests passing, merged to main, pushed):
+
+1. **Write a phase summary** to the user including:
+   - What was implemented
+   - Number of tests added (unit + integration)
+   - Any autonomous decisions made
+   - Any issues encountered and how they were resolved
+
+2. **Update the checklist** in `docs/IMPLEMENTATION_PHASES.md` marking all completed tasks
+
+3. **Push all changes** to origin (main and any branches)
+
+4. **STOP completely** - Do NOT start the next phase
+
+5. **End with this exact message:**
+   ```
+   ✅ Fase X completada y pusheada.
+
+   Para continuar con Fase Y, inicia una nueva sesión con:
+   "Continúa con Fase Y de Cuotix"
+   ```
+
+**Why this rule exists:**
+- Fresh context prevents accumulated errors
+- User can review changes between phases
+- Prevents context window overflow
+- Allows for manual testing between phases
+
+**This rule is NON-NEGOTIABLE. Never start a new phase in the same session.**
