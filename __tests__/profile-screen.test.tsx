@@ -259,7 +259,11 @@ describe('AppSwitch', () => {
 
 describe('enlaces profundos', () => {
   it('una ruta desconocida ofrece volver al inicio', async () => {
-    await render(<NotFoundScreen />);
+    await render(
+      <Provider store={makeStore()}>
+        <NotFoundScreen />
+      </Provider>,
+    );
     expect(screen.getByText('Esta pantalla no existe')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Ir al inicio' }));
     expect(mockReplace).toHaveBeenCalledWith('/');
