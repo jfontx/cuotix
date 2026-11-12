@@ -706,6 +706,15 @@ Detox (React Native) o pruebas manuales documentadas con guión.
 7. Ejecutar una acción con lector activado
 ```
 
+### Checklist Fase 9
+
+- [x] Guiones E2E-1 a E2E-5 redactados en `docs/E2E_TESTS.md`
+- [ ] E2E-1 ejecutado (pendiente de ejecución humana)
+- [ ] E2E-2 ejecutado (pendiente de ejecución humana)
+- [ ] E2E-3 ejecutado (pendiente de ejecución humana)
+- [ ] E2E-4 ejecutado (pendiente de ejecución humana)
+- [ ] E2E-5 ejecutado (pendiente de ejecución humana)
+
 ### Formato de Evidencia
 
 ```markdown
@@ -896,3 +905,6 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Demo y OpenAPI (Fase 8).** `backend/prisma/seed-demo.ts` (`npm run db:reset-demo`) vacía la BD y carga el catálogo más los usuarios de `IMPLEMENTATION_SPEC.md` E (`owner/member/member2/moderator@example.com`, `Test1234!`) y dos extra (solicitante y aprobado), 3 grupos y cuotas en todos los estados con fechas relativas a "hoy". Se niega a correr con `NODE_ENV=production`. La especificación OpenAPI 3.0 está escrita a mano en `docs/openapi.yaml` (sin dependencias nuevas); un test verifica que coincida con las rutas de Express en ambos sentidos, aunque no valida los esquemas de respuesta. La verificación de accesibilidad fue estructural (roles, etiquetas, tamaños táctiles y estados en tests); falta una pasada manual con VoiceOver/TalkBack en dispositivo.
+
+<!-- Decision: 2026-11-12 -->
+**Pruebas E2E (Fase 9).** Se eligió "pruebas manuales documentadas con guión" (opción permitida por la fase) porque Detox exigiría una dev build nativa y dependencias fuera del stack fijado, y en el entorno de desarrollo no hay Detox, Maestro ni adb para manejar la UI. Los guiones están en `docs/E2E_TESTS.md` con Fecha, Dispositivo, Tester y resultados en blanco: **no se ejecutó ningún flujo**, por lo que ninguno está marcado PASS. Siguen pendientes de ejecución humana, incluida la pasada con VoiceOver/TalkBack.
