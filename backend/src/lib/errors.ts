@@ -17,6 +17,8 @@ export const ERROR_CODES = {
   'payment/not-found': { status: 404, message: 'Pago no encontrado' },
   'payment/already-confirmed': { status: 409, message: 'Este pago ya fue confirmado' },
   'payment/invalid-transition': { status: 409, message: 'Esta acción no es válida en el estado actual' },
+  'rating/already-rated': { status: 409, message: 'Ya calificaste a este usuario en este grupo' },
+  'rating/not-eligible': { status: 403, message: 'No puedes calificar aún' },
   'rate-limit/exceeded': { status: 429, message: 'Demasiados intentos, espera unos minutos' },
   'general/not-found': { status: 404, message: 'No encontrado' },
   'general/forbidden': { status: 403, message: 'No tienes permiso para esto' },
