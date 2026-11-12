@@ -3,11 +3,11 @@ import { Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { AuthButton } from '@/components/auth/auth-form';
 import { AnimatedIcon } from '@/components/animated-icon';
 import { HintRow } from '@/components/hint-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AppButton } from '@/components/ui';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import type { AppDispatch } from '@/store';
@@ -64,7 +64,7 @@ export default function HomeScreen() {
         </ThemedView>
 
         {user ? <ThemedText type="small">Sesión iniciada como {user.name}</ThemedText> : null}
-        <AuthButton title="Cerrar sesión" onPress={() => dispatch(logout())} />
+        <AppButton title="Cerrar sesión" onPress={() => dispatch(logout())} />
 
         {Platform.OS === 'web' && <WebBadge />}
       </SafeAreaView>

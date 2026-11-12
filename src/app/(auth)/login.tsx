@@ -1,21 +1,19 @@
 import { Link } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, TextInput } from 'react-native';
 import { useDispatch } from 'react-redux';
 
-import { AuthButton, AuthField, ERROR } from '@/components/auth/auth-form';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { AppButton, AppInput, AppScreen, AppText } from '@/components/ui';
 import { getErrorMessage } from '@/lib/api-error';
 import { fieldErrors, loginSchema } from '@/lib/validation';
 import type { AppDispatch } from '@/store';
 import { startSession } from '@/store/auth-actions';
 import { useLoginMutation } from '@/store/authApi';
+import { useAppTheme } from '@/theme';
 
 export default function LoginScreen() {
   const dispatch = useDispatch<AppDispatch>();
+  const { colors } = useAppTheme();
   const [login, { isLoading }] = useLoginMutation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,57 +32,45 @@ export default function LoginScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            <ThemedText type="subtitle" accessibilityRole="header">
-              Iniciar sesión
-            </ThemedText>
-            <AuthField
-              label="Correo"
-              value={email}
-              onChangeText={setEmail}
-              error={errors.email}
-              autoCapitalize="none"
-              autoComplete="email"
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              returnKeyType="next"
-              onSubmitEditing={() => passwordRef.current?.focus()}
-            />
-            <AuthField
-              ref={passwordRef}
-              label="Contraseña"
-              value={password}
-              onChangeText={setPassword}
-              error={errors.password}
-              secureTextEntry
-              autoComplete="current-password"
-              textContentType="password"
-              returnKeyType="done"
-              onSubmitEditing={submit}
-            />
-            {formError ? (
-              <ThemedText type="small" style={{ color: ERROR }} accessibilityRole="alert">
-                {formError}
-              </ThemedText>
-            ) : null}
-            <AuthButton title="Iniciar sesión" onPress={submit} loading={isLoading} />
-            <Link href="/register" style={styles.link}>
-              <ThemedText type="linkPrimary">¿No tienes cuenta? Regístrate</ThemedText>
-            </Link>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </ThemedView>
+    <AppScreen scrollable centered>
+      <AppText variant="h1">Iniciar sesión</AppText>
+      <AppInput
+        label="Correo"
+        value={email}
+        onChangeText={setEmail}
+        error={errors.email}
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        returnKeyType="next"
+        onSubmitEditing={() => passwordRef.current?.focus()}
+      />
+      <AppInput
+        ref={passwordRef}
+        label="Contraseña"
+        value={password}
+        onChangeText={setPassword}
+        error={errors.password}
+        secureTextEntry
+        autoComplete="current-password"
+        textContentType="password"
+        returnKeyType="done"
+        onSubmitEditing={submit}
+      />
+      {formError ? (
+        <AppText variant="bodySmall" color={colors.error} accessibilityRole="alert">
+          {formError}
+        </AppText>
+      ) : null}
+      <AppButton title="Iniciar sesión" onPress={submit} loading={isLoading} />
+      <Link href="/register" style={styles.link}>
+        <AppText color={colors.primary}>¿No tienes cuenta? Regístrate</AppText>
+      </Link>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center' },
-  safeArea: { flex: 1, width: '100%', maxWidth: MaxContentWidth },
-  flex: { flex: 1 },
-  content: { flexGrow: 1, justifyContent: 'center', padding: Spacing.four, gap: Spacing.three },
-  link: { alignSelf: 'center', paddingVertical: Spacing.two },
+  link: { alignSelf: 'center', paddingVertical: 12 },
 });
