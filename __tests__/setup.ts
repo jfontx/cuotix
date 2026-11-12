@@ -1,3 +1,11 @@
+// El `requestAnimationFrame` del preset de React Native llama a `jest.now()`; si el callback se dispara
+// cuando Jest ya cerró el entorno, lanza "accessed after it has been torn down". Esta versión no depende de `jest`.
+Object.defineProperty(globalThis, 'requestAnimationFrame', {
+  configurable: true,
+  writable: true,
+  value: (callback: (time: number) => void) => setTimeout(() => callback(Date.now()), 0),
+});
+
 // Reanimated no se puede cargar en el entorno de Jest; se mockea el componente que lo usa.
 jest.mock('@/components/animated-icon', () => ({
   AnimatedIcon: () => null,

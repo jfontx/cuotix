@@ -20,8 +20,8 @@ export interface Payment {
 }
 
 export interface PaymentDetail extends Payment {
-  /** Solo el pagador y el administrador lo reciben */
-  payoutDetail: string;
+  /** Solo el administrador y los miembros con cupo lo reciben (no quien ya salió o fue removido) */
+  payoutDetail?: string;
 }
 
 type PaymentResponse = { payment: Payment };
