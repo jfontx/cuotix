@@ -12,6 +12,7 @@ beforeEach(async () => {
     prisma.paymentCycle.deleteMany(),
     prisma.membership.deleteMany(),
     prisma.group.deleteMany(),
+    prisma.service.deleteMany(),
     prisma.refreshToken.deleteMany(),
     prisma.pushToken.deleteMany(),
     prisma.user.deleteMany(),

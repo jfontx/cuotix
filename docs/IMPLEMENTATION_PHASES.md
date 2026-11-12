@@ -162,11 +162,11 @@ Componentes reutilizables accesibles que se usarán en toda la app.
 - [x] `AppIcon` - Wrapper de iconos con a11y
 
 #### Componentes Adicionales (se crean cuando se necesitan)
-- `AppList` - FlatList wrapper → Fase 3 (listas de grupos)
-- `AppEmptyState` - Estado vacío → Fase 3 (explorar sin resultados)
+- `AppList` - FlatList wrapper → Fase 3 ✅ (listas de grupos)
+- `AppEmptyState` - Estado vacío → Fase 3 ✅ (explorar sin resultados)
 - `AppAvatar` - Avatar de usuario → Fase 4 (lista de miembros)
-- `AppDivider` - Separador → Fase 3
-- `AppChip` - Filtros/tags → Fase 3 (filtros de búsqueda)
+- `AppDivider` - Separador → Fase 3 ✅
+- `AppChip` - Filtros/tags → Fase 3 ✅ (filtros de búsqueda)
 - `AppRating` - Estrellas de calificación → Fase 7
 
 ### Tests Requeridos
@@ -228,59 +228,59 @@ CRUD de grupos y catálogo de servicios.
 ### Tareas
 
 #### Backend
-- [ ] Seed de servicios (Spotify, YouTube, Netflix)
-- [ ] `GET /services` - Listar servicios
-- [ ] `GET /services/:id` - Detalle de servicio
-- [ ] `POST /groups` - Crear grupo (validar slots vs maxMembers)
-- [ ] `GET /groups` - Listar grupos (filtros, paginación)
-- [ ] `GET /groups/:id` - Detalle (ocultar payoutDetail según permisos)
-- [ ] `PATCH /groups/:id` - Actualizar grupo (solo owner)
-- [ ] `POST /groups/:id/close` - Cerrar grupo
+- [x] Seed de servicios (Spotify, YouTube, Netflix)
+- [x] `GET /services` - Listar servicios
+- [x] `GET /services/:id` - Detalle de servicio
+- [x] `POST /groups` - Crear grupo (validar slots vs maxMembers)
+- [x] `GET /groups` - Listar grupos (filtros, paginación)
+- [x] `GET /groups/:id` - Detalle (ocultar payoutDetail según permisos)
+- [x] `PATCH /groups/:id` - Actualizar grupo (solo owner)
+- [x] `POST /groups/:id/close` - Cerrar grupo
 
 #### Mobile
-- [ ] RTK Query endpoints (services, groups)
-- [ ] Pantalla Home (mis grupos)
-- [ ] Pantalla Explore (buscar grupos)
-- [ ] Pantalla Group Detail
-- [ ] Pantalla Create Group
-- [ ] Componente GroupCard
+- [x] RTK Query endpoints (services, groups)
+- [x] Pantalla Home (mis grupos)
+- [x] Pantalla Explore (buscar grupos)
+- [x] Pantalla Group Detail
+- [x] Pantalla Create Group
+- [x] Componente GroupCard
 
 ### Tests Requeridos
 
 #### Unit Tests (Backend)
 ```typescript
 // services/groups.test.ts
-- [ ] createGroup valida slots <= maxMembers - 1
-- [ ] createGroup asigna owner correctamente
-- [ ] updateGroup solo permite al owner
-- [ ] closeGroup cambia estado a CLOSED
-- [ ] closeGroup falla si hay pagos MARKED_PAID
-- [ ] getGroupDetail oculta payoutDetail a no miembros
-- [ ] getGroupDetail muestra payoutDetail a miembros ACTIVE
+- [x] createGroup valida slots <= maxMembers - 1
+- [x] createGroup asigna owner correctamente
+- [x] updateGroup solo permite al owner
+- [x] closeGroup cambia estado a CLOSED
+- [x] closeGroup falla si hay pagos MARKED_PAID
+- [x] getGroupDetail oculta payoutDetail a no miembros
+- [x] getGroupDetail muestra payoutDetail a miembros ACTIVE
 ```
 
 #### Integration Tests (Backend)
 ```typescript
 // integration/groups.test.ts
-- [ ] POST /groups - crea grupo correctamente
-- [ ] POST /groups - valida slots vs maxMembers (400)
-- [ ] GET /groups - retorna solo grupos OPEN por defecto
-- [ ] GET /groups - filtra por serviceId
-- [ ] GET /groups - paginación funciona
-- [ ] GET /groups/:id - oculta payoutDetail a extraños
-- [ ] GET /groups/:id - muestra payoutDetail a miembros
-- [ ] PATCH /groups/:id - solo owner puede editar (403)
-- [ ] POST /groups/:id/close - cierra y cancela cuotas
-- [ ] POST /groups/:id/close - falla con pagos pendientes (409)
+- [x] POST /groups - crea grupo correctamente
+- [x] POST /groups - valida slots vs maxMembers (400)
+- [x] GET /groups - retorna solo grupos OPEN por defecto
+- [x] GET /groups - filtra por serviceId
+- [x] GET /groups - paginación funciona
+- [x] GET /groups/:id - oculta payoutDetail a extraños
+- [x] GET /groups/:id - muestra payoutDetail a miembros
+- [x] PATCH /groups/:id - solo owner puede editar (403)
+- [x] POST /groups/:id/close - cierra y cancela cuotas
+- [x] POST /groups/:id/close - falla con pagos pendientes (409)
 ```
 
 #### Unit Tests (Mobile)
 ```typescript
 // components/GroupCard.test.tsx
-- [ ] muestra nombre del servicio
-- [ ] muestra slots disponibles
-- [ ] muestra precio
-- [ ] accessibilityLabel descriptivo completo
+- [x] muestra nombre del servicio
+- [x] muestra slots disponibles
+- [x] muestra precio
+- [x] accessibilityLabel descriptivo completo
 ```
 
 ### Commit
@@ -821,3 +821,15 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **UI: detalles de componentes.** `AppText` asigna `accessibilityRole="header"` por defecto a h1–h3. `AppModal` oculta el fondo táctil a los lectores de pantalla (el botón "Cerrar" del encabezado es el control accesible) para no duplicar el botón. `AppScreen` acepta `centered` para formularios de acceso. Los componentes se exportan desde `@/components/ui`.
+
+<!-- Decision: 2026-11-12 -->
+**Grupos: respuestas y permisos (Fase 3).** Todos los endpoints de `/services` y `/groups` requieren Bearer. Las respuestas usan `{ group }`, `{ service }` o `{ data, pagination }`. Los listados nunca incluyen `payoutDetail`; el detalle lo incluye solo al owner y a membresías `APPROVED`/`ACTIVE` (A.7) y agrega `isOwner`, `myMembership` (`{ id, status }` o `null`), `occupiedSlots` y `availableSlots` (cupos − membresías `APPROVED`/`ACTIVE`). Un id que no es UUID responde `404 general/not-found`.
+
+<!-- Decision: 2026-11-12 -->
+**Grupos: validación.** `slots` entre 1 y `service.maxMembers − 1` (400 `validation/error` con `details[].field = "slots"`); `paymentDay` 1–28 para que exista en todos los meses; precio entero positivo (COP); título 3–80, descripción ≤500. `PATCH /groups/:id` solo acepta campos de contenido y `status` `OPEN`/`PAUSED` (no se puede cambiar `ownerId`, `serviceId` ni cerrar por esa vía), no permite bajar `slots` por debajo de los ocupados (409 `group/slots-exceeded`) y rechaza grupos `CLOSED` (409 `group/closed`). Los estados `FULL` y su transición automática llegan con las membresías (Fase 4).
+
+<!-- Decision: 2026-11-12 -->
+**Grupos: listado y cierre.** `GET /groups` suma el parámetro `mine=true` (grupos donde soy owner o tengo membresía `PENDING`/`APPROVED`/`ACTIVE`) para la pantalla Home; con `mine` no se aplica el filtro por defecto `status=OPEN`. Orden por `createdAt` descendente. `POST /groups/:id/close` es transaccional: falla con 409 `group/has-pending-payments` si hay cuotas `MARKED_PAID`; si no, pasa las `PENDING`/`OVERDUE` a `CANCELLED` y el grupo a `CLOSED`. Los tests limpian también la tabla `Service` entre casos; el seed (`npm run db:seed` / `prisma db seed`) es idempotente (upsert por nombre) y solo carga los 3 servicios.
+
+<!-- Decision: 2026-11-12 -->
+**Mobile: rutas y paginación (Fase 3).** `(app)` es ahora un Stack con `(tabs)` (Mis grupos / Explorar) y las pantallas `groups/create` y `groups/[id]` encima, con el encabezado nativo para volver. Explorar pagina pidiendo `limit = 20 × páginas` (tope 100) con el botón "Ver más grupos" en vez de fusionar páginas en la caché de RTK Query, para evitar duplicados al invalidar etiquetas. Se añadieron `AppChip`, `AppDivider`, `AppEmptyState` y `AppList` a `src/components/ui`. El botón de unirse al grupo y la lista de miembros se implementan en la Fase 4; el cierre de sesión quedó al final de Mis grupos hasta que exista la pantalla de perfil.
