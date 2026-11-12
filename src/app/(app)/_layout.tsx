@@ -22,6 +22,9 @@ export default function AppLayout() {
       <Stack.Screen name="payments/index" options={{ title: 'Mis cuotas' }} />
       <Stack.Screen name="payments/[id]" options={{ title: 'Cuota' }} />
       <Stack.Screen name="payments/mark-paid" options={{ title: 'Marcar como pagada' }} />
+      <Stack.Screen name="users/[id]" options={{ title: 'Perfil' }} />
+      <Stack.Screen name="ratings/create" options={{ title: 'Calificar' }} />
+      <Stack.Screen name="reports/create" options={{ title: 'Reportar' }} />
     </Stack>
   );
 }

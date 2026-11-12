@@ -88,6 +88,14 @@ export default function GroupDetailScreen() {
             onPress={() => router.push(`/groups/${id}/payments`)}
           />
         ) : null}
+        {!group.isOwner && mine && ['ACTIVE', 'LEFT'].includes(mine.status) ? (
+          <AppButton
+            title={`Perfil de ${group.owner.name}`}
+            variant="outline"
+            accessibilityHint="Abre el perfil del administrador, donde puedes calificarlo o reportarlo"
+            onPress={() => router.push({ pathname: '/users/[id]', params: { id: group.owner.id, groupId: id } })}
+          />
+        ) : null}
         {isMember ? <AppButton title="Salir del grupo" variant="ghost" onPress={() => setConfirmLeave(true)} /> : null}
       </View>
     );

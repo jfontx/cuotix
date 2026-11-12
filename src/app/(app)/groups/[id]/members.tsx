@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -21,6 +21,7 @@ type Dialog = { kind: 'approve' | 'remove'; member: Member } | null;
 
 export default function MembersScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const { colors } = useAppTheme();
   const group = useGetGroupQuery(id).data?.group;
   const { data, isLoading, error, refetch } = useListMembersQuery(id);
@@ -79,6 +80,15 @@ export default function MembersScreen() {
     await run(() => remove({ id: memberId, groupId: id, reason: text || undefined }));
   };
 
+  const profileButton = (m: Member) => (
+    <AppButton
+      title="Ver perfil"
+      variant="ghost"
+      accessibilityHint={`Abre el perfil y las calificaciones de ${m.user.name}`}
+      onPress={() => router.push({ pathname: '/users/[id]', params: { id: m.user.id, groupId: id } })}
+    />
+  );
+
   const section = (title: string, list: Member[], actions?: (m: Member) => React.ReactNode) =>
     list.length ? (
       <View style={styles.section}>
@@ -116,6 +126,7 @@ export default function MembersScreen() {
       {isOwner
         ? section('Solicitudes', pending, (m) => (
             <>
+              {profileButton(m)}
               <AppButton
                 title="Aprobar"
                 accessibilityHint={`Aprueba la solicitud de ${m.user.name}`}
@@ -132,21 +143,24 @@ export default function MembersScreen() {
             </>
           ))
         : null}
-      {section('Esperando confirmar acceso', approved)}
+      {section('Esperando confirmar acceso', approved, profileButton)}
       {active.length && (pending.length || approved.length) ? <AppDivider /> : null}
       {section(
         'Miembros activos',
         active,
-        isOwner
-          ? (m) => (
+        (m) => (
+          <>
+            {profileButton(m)}
+            {isOwner ? (
               <AppButton
                 title="Expulsar"
                 variant="ghost"
                 accessibilityHint={`Expulsa a ${m.user.name}; solo es posible con 2 cuotas vencidas seguidas`}
                 onPress={() => setDialog({ kind: 'remove', member: m })}
               />
-            )
-          : undefined,
+            ) : null}
+          </>
+        ),
       )}
 
       <AppModal
