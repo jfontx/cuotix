@@ -53,11 +53,12 @@ export default function ExploreScreen() {
         autoCapitalize="none"
       />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} accessibilityRole="toolbar">
-        <AppChip label="Todos" selected={!serviceId} onPress={() => selectService(undefined)} />
+        <AppChip label="Todos" width={CHIP_WIDTH} selected={!serviceId} onPress={() => selectService(undefined)} />
         {services?.data.map((s) => (
           <AppChip
             key={s.id}
             label={s.name}
+            width={CHIP_WIDTH}
             selected={serviceId === s.id}
             onPress={() => selectService(serviceId === s.id ? undefined : s.id)}
             accessibilityHint="Filtra los grupos por este servicio"
@@ -86,5 +87,8 @@ export default function ExploreScreen() {
     </AppScreen>
   );
 }
+
+/** Todos los filtros miden lo mismo, sin importar la longitud del nombre del servicio */
+const CHIP_WIDTH = 140;
 
 const styles = StyleSheet.create({ chips: { gap: spacing.sm, paddingVertical: spacing.xs } });
