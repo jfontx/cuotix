@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "jobs:run": "tsx src/jobs/run.ts"
   },
   "keywords": [],
   "author": "",

@@ -37,3 +37,20 @@ export function nextCycleEnd(now: Date, paymentDay: number) {
   const thisMonth = dueDateFor(formatPeriod(year, month), paymentDay);
   return thisMonth > now ? thisMonth : dueDateFor(shiftPeriod(formatPeriod(year, month), 1), paymentDay);
 }
+
+/** Período `YYYY-MM` vigente en Bogotá. */
+export function currentPeriod(now: Date) {
+  const { year, month } = bogotaParts(now);
+  return formatPeriod(year, month);
+}
+
+/** Inicio (00:00 de Bogotá) del día de `now`. */
+export function bogotaDayStart(now: Date) {
+  const { year, month, day } = bogotaParts(now);
+  return new Date(Date.UTC(year, month - 1, day, BOGOTA_OFFSET_HOURS));
+}
+
+/** Días calendario (Bogotá) que faltan para `date`; negativo si ya pasó. */
+export function daysUntil(date: Date, now: Date) {
+  return Math.round((bogotaDayStart(date).getTime() - bogotaDayStart(now).getTime()) / 86_400_000);
+}
