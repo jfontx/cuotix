@@ -10,11 +10,14 @@ import { spacing } from '@/theme/spacing';
 import { logout } from '@/store/auth-actions';
 import { selectCurrentUser } from '@/store/authSlice';
 import { useListGroupsQuery } from '@/store/groupsApi';
+import { useListNotificationsQuery } from '@/store/notificationsApi';
 
 export default function HomeScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const user = useSelector(selectCurrentUser);
+  const { data: notifications } = useListNotificationsQuery();
+  const unread = notifications?.unread ?? 0;
   const { data, isLoading, isFetching, error, refetch } = useListGroupsQuery({ mine: true, limit: 100 });
 
   return (
@@ -38,6 +41,11 @@ export default function HomeScreen() {
         ListFooterComponent={
           <View style={styles.footer}>
             <AppButton title="Crear grupo" onPress={() => router.push('/groups/create')} />
+            <AppButton
+              title={unread > 0 ? `Notificaciones (${unread})` : 'Notificaciones'}
+              variant="outline"
+              onPress={() => router.push('/notifications')}
+            />
             <AppButton title="Mis cuotas" variant="outline" onPress={() => router.push('/payments')} />
             <AppButton title="Cerrar sesión" variant="ghost" onPress={() => dispatch(logout())} />
           </View>

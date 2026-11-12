@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { useNotificationListeners } from '@/hooks/use-notification-listeners';
 import { store, type AppDispatch } from '@/store';
 import { restoreSession } from '@/store/auth-actions';
 import { selectAuthStatus, selectIsAuthenticated } from '@/store/authSlice';
@@ -19,6 +20,8 @@ function RootNavigator() {
   useEffect(() => {
     dispatch(restoreSession());
   }, [dispatch]);
+
+  useNotificationListeners(isAuthenticated);
 
   // Mientras se restaura la sesión se mantiene el splash
   if (status === 'loading') return null;

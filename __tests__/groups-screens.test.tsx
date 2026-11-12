@@ -92,7 +92,7 @@ describe('HomeScreen', () => {
     const calls = mockApi({ '/groups': () => json({ data: [makeGroup()], pagination }) });
     await renderScreen(<HomeScreen />);
     expect(await screen.findByText('Spotify del barrio')).toBeTruthy();
-    expect(calls[0].url).toContain('mine=true');
+    expect(calls.find((c) => c.url.startsWith('/groups'))?.url).toContain('mine=true');
     await fireEvent.press(screen.getByRole('button', { name: /Spotify Premium Familiar/ }));
     expect(mockPush).toHaveBeenCalledWith('/groups/g1');
   });

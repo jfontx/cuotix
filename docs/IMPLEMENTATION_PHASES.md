@@ -438,58 +438,58 @@ Tareas programadas y sistema de notificaciones.
 ### Tareas
 
 #### Backend
-- [ ] Job: generatePaymentCycles (generar cuotas mensuales)
-- [ ] Job: markOverdue (marcar atrasos)
-- [ ] Job: sendReminders (enviar recordatorios)
-- [ ] `POST /me/push-token` - Registrar token
-- [ ] `GET /me/notifications` - Listar notificaciones
-- [ ] `PATCH /notifications/:id/read` - Marcar leída
-- [ ] `POST /me/notifications/read-all` - Marcar todas leídas
-- [ ] Script CLI: `npm run jobs:run -- --date=YYYY-MM-DD`
-- [ ] Ejecutar jobs al iniciar el servidor
+- [x] Job: generatePaymentCycles (generar cuotas mensuales)
+- [x] Job: markOverdue (marcar atrasos)
+- [x] Job: sendReminders (enviar recordatorios)
+- [x] `POST /me/push-token` - Registrar token
+- [x] `GET /me/notifications` - Listar notificaciones
+- [x] `PATCH /notifications/:id/read` - Marcar leída
+- [x] `POST /me/notifications/read-all` - Marcar todas leídas
+- [x] Script CLI: `npm run jobs:run -- --date=YYYY-MM-DD`
+- [x] Ejecutar jobs al iniciar el servidor
 
 #### Mobile
-- [ ] Configurar Expo Notifications
-- [ ] Registrar push token al login
-- [ ] Eliminar push token al logout
-- [ ] Pantalla Notifications
-- [ ] Handler de notificaciones en foreground
-- [ ] Invalidar RTK Query tags al recibir push
+- [x] Configurar Expo Notifications
+- [x] Registrar push token al login
+- [x] Eliminar push token al logout
+- [x] Pantalla Notifications
+- [x] Handler de notificaciones en foreground
+- [x] Invalidar RTK Query tags al recibir push
 
 ### Tests Requeridos
 
 #### Unit Tests (Backend)
 ```typescript
 // jobs/generatePayments.test.ts
-- [ ] genera cuotas para membresías ACTIVE
-- [ ] ignora grupos CLOSED
-- [ ] ignora membresías LEFT/REMOVED
-- [ ] es idempotente (no duplica)
-- [ ] usa timezone America/Bogota
+- [x] genera cuotas para membresías ACTIVE
+- [x] ignora grupos CLOSED
+- [x] ignora membresías LEFT/REMOVED
+- [x] es idempotente (no duplica)
+- [x] usa timezone America/Bogota
 
 // jobs/markOverdue.test.ts
-- [ ] marca OVERDUE después de 3 días de gracia
-- [ ] no marca dentro de días de gracia
-- [ ] ignora cuotas MARKED_PAID
-- [ ] ignora membresías no ACTIVE
-- [ ] guarda overdueAt
+- [x] marca OVERDUE después de 3 días de gracia
+- [x] no marca dentro de días de gracia
+- [x] ignora cuotas MARKED_PAID
+- [x] ignora membresías no ACTIVE
+- [x] guarda overdueAt
 
 // jobs/sendReminders.test.ts
-- [ ] envía recordatorio 2 días antes
-- [ ] envía recordatorio día del vencimiento
-- [ ] envía notificación al marcar OVERDUE
-- [ ] no duplica notificaciones (unique constraint)
-- [ ] elimina push tokens inválidos
+- [x] envía recordatorio 2 días antes
+- [x] envía recordatorio día del vencimiento
+- [x] envía notificación al marcar OVERDUE
+- [x] no duplica notificaciones (unique constraint)
+- [x] elimina push tokens inválidos
 ```
 
 #### Integration Tests (Backend)
 ```typescript
 // integration/notifications.test.ts
-- [ ] POST /me/push-token - registra token
-- [ ] POST /me/push-token - reasigna si ya existe
-- [ ] GET /me/notifications - lista paginada
-- [ ] PATCH /notifications/:id/read - marca leída
-- [ ] POST /me/notifications/read-all - marca todas
+- [x] POST /me/push-token - registra token
+- [x] POST /me/push-token - reasigna si ya existe
+- [x] GET /me/notifications - lista paginada
+- [x] PATCH /notifications/:id/read - marca leída
+- [x] POST /me/notifications/read-all - marca todas
 ```
 
 ### Commit
@@ -857,3 +857,18 @@ Usar este checklist antes de cada commit:
 
 <!-- Decision: 2026-11-12 -->
 **Mobile: pagos (Fase 5).** Rutas nuevas: `payments/index` (Mis cuotas, accesible desde Mis grupos), `payments/[id]` (detalle; según si el usuario es el pagador o el administrador muestra "Ya pagué" o "Confirmar/Rechazar"), `payments/mark-paid` (referencia opcional) y `groups/[id]/payments` (el administrador ve las cuotas de todos; un miembro, las suyas en ese grupo). El rechazo pide un motivo de al menos 10 caracteres en un modal. Fechas de vencimiento se muestran en horario de Bogotá (`src/lib/payments.ts`).
+
+<!-- Decision: 2026-11-12 -->
+**Jobs y notificaciones (Fase 6).** Los jobs viven en `backend/src/jobs/` (`generatePayments`, `markOverdue`, `sendReminders`) y reutilizan `lib/dates.ts` (Bogotá, con `currentPeriod`, `bogotaDayStart` y `daysUntil` nuevos). `generatePaymentCycles` crea la cuota del mes siguiente (spec C.3); `markOverdue` usa 3 días de gracia; el CLI `npm run jobs:run -- --date=YYYY-MM-DD` simula esa fecha a mediodía de Bogotá. Al arrancar el servidor se programan los crons (00:05, 00:10 y 09:00 Bogotá) y se ejecutan los tres jobs una vez; un fallo se registra y no tumba el servidor.
+
+<!-- Decision: 2026-11-12 -->
+**Recordatorios: un solo `PAYMENT_REMINDER` por cuota.** El `@@unique([userId, type, paymentId])` impide dos recordatorios del mismo tipo para la misma cuota, y cambiar el esquema (nuevo valor del enum) queda fuera de lo que se decide de forma autónoma. Por eso se envía uno solo: el primero que corra entre "2 días antes" y "el día del vencimiento" (si el servidor estuvo apagado hace 2 días, el del día de vencimiento hace de respaldo). Para tener ambos haría falta un tipo nuevo (p. ej. `PAYMENT_DUE_TODAY`). El aviso de atraso (`PAYMENT_OVERDUE`) se envía desde `sendReminders` a toda cuota `OVERDUE` de una membresía activa, de modo que también cubre atrasos marcados mientras el servidor estaba apagado.
+
+<!-- Decision: 2026-11-12 -->
+**Push.** `notify()` guarda la notificación y dispara el push sin esperarlo (se usa dentro de transacciones); `notifyOnce()` es la variante idempotente de los jobs (captura `P2002`, espera el push). `sendPush` nunca lanza: un fallo no aborta el lote y los tokens con `DeviceNotRegistered` se eliminan. El envío usa la API HTTP de Expo (`EXPO_ACCESS_TOKEN` opcional) y en `NODE_ENV=test` no sale a la red (se inyecta con `setPushSender`). Los pushes llevan `type`, `notificationId` y los ids del recurso en `data`.
+
+<!-- Decision: 2026-11-12 -->
+**API de notificaciones.** `POST /me/push-token` responde 204 (upsert por token, reasigna el usuario). `GET /me/notifications?page&limit` (límite 20 por defecto, máx. 50) responde `{ data, page, limit, total, unread }`. `PATCH /notifications/:id/read` responde `{ notification }` y da 404 si el id no existe, no es UUID o es de otro usuario. `POST /me/notifications/read-all` responde `{ updated }`. El logout ya borraba el push token (Fase 1).
+
+<!-- Decision: 2026-11-12 -->
+**Mobile: notificaciones (Fase 6).** La bandeja es la pantalla `notifications/index` accesible desde "Notificaciones (n)" en Mis grupos (igual que "Mis cuotas"), en vez de una pestaña, porque las pestañas nativas requieren un icono PNG nuevo. El token se registra tras iniciar o restaurar sesión (no bloquea ni rompe el acceso si se deniega el permiso, es simulador o falla la red) y se envía en el logout. En primer plano se muestra el banner y `useNotificationListeners` invalida las etiquetas RTK Query según el tipo (`tagsForNotification`); al tocar un push se abre la cuota, el grupo o la bandeja. En desarrollo hace falta un build de desarrollo (no Expo Go) y un `projectId` de EAS para obtener el token.
